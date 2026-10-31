@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL") // Sangat berguna jika kalian menggunakan Supabase
+}
+
+// ==========================================
+// 1. ENUM (Tipe Data Pilihan Tetap)
+// ==========================================
+enum Role {
+  ADMIN
+  PENDAFTAR
+}
+
+enum StatusPendaftaran {
+  DRAFT
+  DIAJUKAN
+  PERLU_REVISI
+  TERVERIFIKASI
+  LULUS
+  TIDAK_LULUS
+}
+
+enum StatusBerkas {
+  MENUNGGU
+  VALID
+  TIDAK_VALID
+}
+
+// ==========================================
+// 2. MODEL TABEL DATABASE
+// ==========================================
+
+model User {
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email             String             @unique
+  role              Role               @default(PENDAFTAR)
+  createdAt         DateTime           @default(now())
+  
+  // Relasi
+  pendaftaran       Pendaftaran?       // 1 akun, maksimal 1 pendaftaran
+  pushSubscriptions PushSubscription[] // 1 akun bisa punya notifikasi di HP & Laptop
+}
+
+model MasterProdi {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  namaProdi    String
+  fakultas     String
+  
+  // Relasi
+  pendaftarans Pendaftaran[]
+}
+
+model MasterJalur {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  namaJalur    String
+  
+  // Relasi
+  pendaftarans Pendaftaran[]
+}
+
+model Pendaftaran {
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String            @unique @db.Uuid
+  prodiId          String            @db.Uuid
+  jalurId          String            @db.Uuid
+  nomorPendaftaran String?           @unique // Wajib terisi setelah dikirim (Finalisasi)
+  namaLengkap      String
+  nisn             String            @unique
+  status           StatusPendaftaran @default(DRAFT)
+  catatanPanitia   String?           @db.Text
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  // Relasi dan Constraint
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prodi            MasterProdi       @relation(fields: [prodiId], references: [id], onDelete: Restrict)
+  jalur            MasterJalur       @relation(fields: [jalurId], references: [id], onDelete: Restrict)
+  berkas           Berkas[]
+}
+
+model Berkas {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  pendaftaranId  String       @db.Uuid
+  jenisBerkas    String
+  fileUrl        String       // Dilarang Base64, ini URL dari Supabase Storage/R2
+  statusBerkas   StatusBerkas @default(MENUNGGU)
+  uploadedAt     DateTime     @default(now())
+
+  // Relasi
+  pendaftaran    Pendaftaran  @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+}
+
+// Tabel ini wajib ada untuk memenuhi syarat Worker Web Push Notification
+model PushSubscription {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  endpoint  String   @db.Text
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
