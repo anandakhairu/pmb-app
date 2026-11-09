@@ -1,111 +1,117 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL") // Sangat berguna jika kalian menggunakan Supabase
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-// ==========================================
-// 1. ENUM (Tipe Data Pilihan Tetap)
-// ==========================================
-enum Role {
-  ADMIN
-  PENDAFTAR
+model Admin {
+  id_admin             String                 @id @default(uuid()) @db.Uuid
+  nama                 String
+  email                String                 @unique
+  password             String
+  role_spesifik        String?
+  formulir_pendaftaran FormulirPendaftaran[]
 }
 
-enum StatusPendaftaran {
-  DRAFT
-  DIAJUKAN
-  PERLU_REVISI
-  TERVERIFIKASI
-  LULUS
-  TIDAK_LULUS
-}
-
-enum StatusBerkas {
-  MENUNGGU
-  VALID
-  TIDAK_VALID
-}
-
-// ==========================================
-// 2. MODEL TABEL DATABASE
-// ==========================================
-
-model User {
-  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email             String             @unique
-  role              Role               @default(PENDAFTAR)
-  createdAt         DateTime           @default(now())
+model CalonMahasiswa {
+  id_mahasiswa         String                 @id @default(uuid()) @db.Uuid
+  nama_lengkap         String
+  email                String                 @unique
+  password             String
+  no_hp                String
+  created_at           DateTime               @default(now())
   
-  // Relasi
-  pendaftaran       Pendaftaran?       // 1 akun, maksimal 1 pendaftaran
-  pushSubscriptions PushSubscription[] // 1 akun bisa punya notifikasi di HP & Laptop
+  data_asal_sekolah    DataAsalSekolah?
+  formulir_pendaftaran FormulirPendaftaran[]
+  perangkat_notifikasi PerangkatNotifikasi[]
 }
 
-model MasterProdi {
-  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  namaProdi    String
-  fakultas     String
+model DataAsalSekolah {
+  id_sekolah   String         @id @default(uuid()) @db.Uuid
+  id_mahasiswa String         @unique @db.Uuid
+  nisn         String         @unique
+  npsn         String
+  nama_sekolah String
+  jurusan      String?
   
-  // Relasi
-  pendaftarans Pendaftaran[]
+  mahasiswa    CalonMahasiswa @relation(fields: [id_mahasiswa], references: [id_mahasiswa], onDelete: Cascade)
 }
 
-model MasterJalur {
-  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  namaJalur    String
+model JalurPendaftaran {
+  id_jalur             String                 @id @default(uuid()) @db.Uuid
+  nama_jalur           String                 @unique
+  butuh_ujian_cbt      Boolean                @default(false)
   
-  // Relasi
-  pendaftarans Pendaftaran[]
+  formulir_pendaftaran FormulirPendaftaran[]
 }
 
-model Pendaftaran {
-  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId           String            @unique @db.Uuid
-  prodiId          String            @db.Uuid
-  jalurId          String            @db.Uuid
-  nomorPendaftaran String?           @unique // Wajib terisi setelah dikirim (Finalisasi)
-  namaLengkap      String
-  nisn             String            @unique
-  status           StatusPendaftaran @default(DRAFT)
-  catatanPanitia   String?           @db.Text
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-
-  // Relasi dan Constraint
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  prodi            MasterProdi       @relation(fields: [prodiId], references: [id], onDelete: Restrict)
-  jalur            MasterJalur       @relation(fields: [jalurId], references: [id], onDelete: Restrict)
-  berkas           Berkas[]
+model ProgramStudi {
+  id_prodi             String                 @id @default(uuid()) @db.Uuid
+  nama_prodi           String
+  fakultas             String
+  
+  formulir_pendaftaran FormulirPendaftaran[]
 }
 
-model Berkas {
-  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  pendaftaranId  String       @db.Uuid
-  jenisBerkas    String
-  fileUrl        String       // Dilarang Base64, ini URL dari Supabase Storage/R2
-  statusBerkas   StatusBerkas @default(MENUNGGU)
-  uploadedAt     DateTime     @default(now())
+model FormulirPendaftaran {
+  id_formulir       String              @id @default(uuid()) @db.Uuid
+  id_mahasiswa      String              @db.Uuid
+  id_prodi          String              @db.Uuid
+  id_jalur          String              @db.Uuid
+  id_admin_pic      String?             @db.Uuid
+  nomor_pendaftaran String?             @unique
+  status_berkas     String              @default("MENUNGGU")
+  status_kelulusan  String              @default("BELUM_DIPROSES")
 
-  // Relasi
-  pendaftaran    Pendaftaran  @relation(fields: [pendaftaranId], references: [id], onDelete: Cascade)
+  mahasiswa         CalonMahasiswa      @relation(fields: [id_mahasiswa], references: [id_mahasiswa], onDelete: Cascade)
+  program_studi     ProgramStudi        @relation(fields: [id_prodi], references: [id_prodi])
+  jalur_pendaftaran JalurPendaftaran    @relation(fields: [id_jalur], references: [id_jalur])
+  admin_pic         Admin?              @relation(fields: [id_admin_pic], references: [id_admin])
+  
+  berkas_dokumen    BerkasDokumen[]
+  tagihan_pembayaran TagihanPembayaran[]
+  jadwal_ujian_cbt  JadwalUjianCbt?
 }
 
-// Tabel ini wajib ada untuk memenuhi syarat Worker Web Push Notification
-model PushSubscription {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String   @db.Uuid
-  endpoint  String   @db.Text
-  p256dh    String
-  auth      String
-  createdAt DateTime @default(now())
+model BerkasDokumen {
+  id_berkas       String              @id @default(uuid()) @db.Uuid
+  id_formulir     String              @db.Uuid
+  nama_berkas     String
+  file_url        String
+  status_validasi String              @default("MENUNGGU")
+  
+  formulir        FormulirPendaftaran @relation(fields: [id_formulir], references: [id_formulir], onDelete: Cascade)
+}
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model TagihanPembayaran {
+  id_tagihan    String              @id @default(uuid()) @db.Uuid
+  id_formulir   String              @db.Uuid
+  jenis_tagihan String
+  nominal       Int
+  status_bayar  String              @default("BELUM_BAYAR")
+  bukti_bayar   String?
+  
+  formulir      FormulirPendaftaran @relation(fields: [id_formulir], references: [id_formulir], onDelete: Cascade)
+}
+
+model JadwalUjianCbt {
+  id_ujian      String              @id @default(uuid()) @db.Uuid
+  id_formulir   String              @unique @db.Uuid
+  tanggal_ujian DateTime
+  lokasi_gedung String
+  nomor_kursi   String
+  
+  formulir      FormulirPendaftaran @relation(fields: [id_formulir], references: [id_formulir], onDelete: Cascade)
+}
+
+model PerangkatNotifikasi {
+  id_notifikasi  String         @id @default(uuid()) @db.Uuid
+  id_mahasiswa   String         @db.Uuid
+  kode_browser   String
+  kunci_keamanan String
+  
+  mahasiswa      CalonMahasiswa @relation(fields: [id_mahasiswa], references: [id_mahasiswa], onDelete: Cascade)
 }
