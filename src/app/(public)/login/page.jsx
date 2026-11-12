@@ -30,10 +30,18 @@ const loginSchema = z.object({
 
 export default function LoginPage() {
   const router = useRouter();
+  const [emailVal, setEmailVal] = useState("");
+  const [passwordVal, setPasswordVal] = useState("");
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState(null);
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  function pasangKredensial(email, password) {
+    setEmailVal(email);
+    setPasswordVal(password);
+    setErrors({});
+  }
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -68,8 +76,12 @@ export default function LoginPage() {
       // `remember` menentukan apakah sesi disimpan persisten.
       await new Promise((resolve) => setTimeout(resolve, 700)); // simulasi
 
-      router.push("/dashboard");
-    } catch {
+      const emailLower = parsed.data.email.toLowerCase();
+      if (emailLower.includes("admin") || emailLower.includes("panitia")) {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
       setFormError("Email atau kata sandi tidak cocok. Periksa lalu coba lagi.");
     } finally {
       setLoading(false);
@@ -91,6 +103,36 @@ export default function LoginPage() {
         </Link>
       </p>
 
+      {/* KOTAK AKUN UJI COBA (CEPAT) */}
+      <div className="mt-6 rounded-2xl border border-[#4B6E5A]/25 bg-[#4B6E5A]/5 p-4">
+        <div className="flex items-center justify-between pb-2 border-b border-[#4B6E5A]/15">
+          <p className="text-xs font-bold text-[#2F4A3B]">
+            Akun Cepat untuk Uji Coba:
+          </p>
+          <span className="text-[10px] font-semibold text-[#4B6E5A] bg-white px-2 py-0.5 rounded-full border border-[#4B6E5A]/20">
+            1-Klik Isi
+          </span>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+          <button
+            type="button"
+            onClick={() => pasangKredensial("aulia@example.com", "Pendaftar2027!")}
+            className="rounded-xl border border-neutral-200 bg-white p-2.5 text-left transition-all hover:border-[#4B6E5A] hover:bg-neutral-50 focus-visible:outline-[#4B6E5A]"
+          >
+            <p className="font-bold text-neutral-900">🎓 Calon Pendaftar</p>
+            <p className="text-[11px] text-neutral-500 font-mono mt-0.5">aulia@example.com</p>
+          </button>
+          <button
+            type="button"
+            onClick={() => pasangKredensial("panitia.pmb@universitas.ac.id", "Panitia2027!")}
+            className="rounded-xl border border-neutral-200 bg-white p-2.5 text-left transition-all hover:border-[#4B6E5A] hover:bg-neutral-50 focus-visible:outline-[#4B6E5A]"
+          >
+            <p className="font-bold text-neutral-900">🛡️ Admin Panitia</p>
+            <p className="text-[11px] text-neutral-500 font-mono mt-0.5">panitia.pmb@...</p>
+          </button>
+        </div>
+      </div>
+
       <form onSubmit={onSubmit} noValidate className="mt-10 space-y-6">
         {formError && (
           <p
@@ -111,6 +153,8 @@ export default function LoginPage() {
             type="email"
             autoComplete="email"
             placeholder="nama@email.com"
+            value={emailVal}
+            onChange={(e) => setEmailVal(e.target.value)}
             aria-invalid={!!errors.email}
             className={`mt-2 ${inputClass}`}
           />
@@ -135,6 +179,8 @@ export default function LoginPage() {
               name="password"
               autoComplete="current-password"
               placeholder="Masukkan kata sandi"
+              value={passwordVal}
+              onChange={(e) => setPasswordVal(e.target.value)}
               aria-invalid={!!errors.password}
             />
           </div>
