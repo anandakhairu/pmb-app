@@ -10,15 +10,8 @@ import {
   Bell,
   Check,
   CheckCircle2,
-  Clock,
-  Download,
-  ExternalLink,
-  Eye,
   FileText,
-  ImageIcon,
-  Info,
   Loader2,
-  Maximize2,
   RotateCw,
   Send,
   Sparkles,
@@ -33,7 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { formatTanggal } from "@/lib/data-mahasiswa";
+
 
 export function SplitViewVerifikasi({ pendaftar }) {
   const router = useRouter();
@@ -111,10 +104,7 @@ export function SplitViewVerifikasi({ pendaftar }) {
         webPushSent: kirimWebPush,
       });
 
-      // Segarkan state router
-      setTimeout(() => {
-        router.refresh();
-      }, 800);
+      router.refresh();
     } catch {
       alert("Gagal menyimpan verifikasi. Silakan coba kembali.");
     } finally {

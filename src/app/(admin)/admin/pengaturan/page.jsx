@@ -1,17 +1,5 @@
-import {
-  Bell,
-  CheckCircle2,
-  Database,
-  KeyRound,
-  Layers,
-  Server,
-  ShieldAlert,
-  ShieldCheck,
-  Sliders,
-  Sparkles,
-} from "lucide-react";
+import { Bell, CheckCircle2, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 export const metadata = {
   title: "Pengaturan & Web Push",

@@ -2,31 +2,13 @@ import { Suspense } from "react";
 import Link from "next/link";
 import {
   AlertCircle,
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  Eye,
   FileCheck2,
-  FileText,
-  Filter,
   Search,
-  SlidersHorizontal,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  MASTER_JALUR,
-  MASTER_PRODI,
-  getDaftarPendaftarAdmin,
-} from "@/lib/data-admin";
+import { getDaftarPendaftarAdmin } from "@/lib/data-admin";
 import { formatTanggal } from "@/lib/data-mahasiswa";
 
 export const metadata = {

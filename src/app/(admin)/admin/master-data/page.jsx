@@ -1,4 +1,4 @@
-import { BookOpen, GraduationCap, Layers, Plus, School } from "lucide-react";
+import { Layers, Plus, School } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MASTER_JALUR, MASTER_PRODI } from "@/lib/data-admin";

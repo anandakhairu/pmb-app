@@ -416,7 +416,7 @@ export const getStatistikAdmin = cache(async () => {
 /** Mengambil daftar pendaftar dengan filter */
 export const getDaftarPendaftarAdmin = cache(
   async ({ status, jalur, prodi, q } = {}) => {
-    let hasil = [...DAFTAR_PENDAFTAR_MOCK];
+    let hasil = DAFTAR_PENDAFTAR_MOCK;
 
     if (status && status !== "SEMUA") {
       hasil = hasil.filter((p) => p.statusBerkas === status);
@@ -444,11 +444,7 @@ export const getDaftarPendaftarAdmin = cache(
 /** Mengambil satu detail formulir pendaftar berdasarkan ID */
 export const getDetailPendaftarAdmin = cache(async (id) => {
   const item = DAFTAR_PENDAFTAR_MOCK.find((p) => p.id === id);
-  if (!item) {
-    // Fallback ke pendaftar pertama jika ID mock tidak cocok
-    return DAFTAR_PENDAFTAR_MOCK[0];
-  }
-  return item;
+  return item || null;
 });
 
 /** Master data program studi untuk filter & kelengkapan */

@@ -7,12 +7,9 @@ import { Dialog } from "radix-ui";
 import {
   BarChart3,
   BookOpen,
-  ClipboardCheck,
   FileCheck2,
-  FolderSync,
   LogOut,
   Menu,
-  ShieldCheck,
   Sliders,
   Sparkles,
   Users,

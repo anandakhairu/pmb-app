@@ -2,15 +2,10 @@ import Link from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
-  ArrowUpRight,
-  CheckCircle2,
   Clock,
-  ExternalLink,
   Eye,
   FileCheck2,
   GraduationCap,
-  Sparkles,
-  TrendingUp,
   Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

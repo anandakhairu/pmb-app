@@ -77,11 +77,8 @@ export default function LoginPage() {
       await new Promise((resolve) => setTimeout(resolve, 700)); // simulasi
 
       const emailLower = parsed.data.email.toLowerCase();
-      if (emailLower.includes("admin") || emailLower.includes("panitia")) {
-        router.push("/admin");
-      } else {
-        router.push("/dashboard");
-      }
+      const isAdmin = emailLower.includes("admin") || emailLower.includes("panitia");
+      router.push(isAdmin ? "/admin" : "/dashboard");
       setFormError("Email atau kata sandi tidak cocok. Periksa lalu coba lagi.");
     } finally {
       setLoading(false);
