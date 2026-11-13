@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { NotifikasiWebPushPrompt } from "@/components/notification/notif-prompt";
 import { Pemberitahuan, Stepper, StatusBadge } from "@/components/mahasiswa/status";
 import {
   formatTanggal,
@@ -78,6 +79,8 @@ async function KontenBeranda() {
           Pantau tahapan pendaftaranmu di sini. Tahun akademik {formulir.tahunAkademik}.
         </p>
       </header>
+
+      <NotifikasiWebPushPrompt userType="MAHASISWA" userId={mahasiswa.id} namaPengguna={mahasiswa.namaLengkap} />
 
       <Pemberitahuan {...notif} />
 

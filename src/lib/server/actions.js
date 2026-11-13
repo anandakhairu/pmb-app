@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { prisma } from "../prisma.js";
+import { enqueueNotificationJob } from "../queue/notifications.js";
 
 // Safe wrapper untuk revalidatePath yang bekerja di Next.js maupun runner standalone test
 async function safeRevalidate(path) {
@@ -80,9 +81,22 @@ export async function simpanVerifikasiBerkasAction(payload) {
         }
       }
 
-      // 4. Log Web Push trigger
-      if (kirimNotifikasi) {
-        console.log(`[WebPush] Job enqueued for formulir ${formulirId} with status ${statusBerkas}`);
+      // 4. Enqueue BullMQ notification job
+      if (kirimNotifikasi && formulirUpdate.mahasiswaId) {
+        const pesanBody =
+          statusBerkas === "TERVERIFIKASI"
+            ? "Selamat! Berkas pendaftaran Anda telah dinyatakan VALID oleh panitia."
+            : "Ada berkas yang memerlukan revisi. Silakan periksa catatan perbaikan di portal.";
+
+        await enqueueNotificationJob({
+          targetId: formulirUpdate.mahasiswaId,
+          targetType: "MAHASISWA",
+          title: statusBerkas === "TERVERIFIKASI" ? "Berkas Terverifikasi" : "Perlu Revisi Berkas",
+          body: pesanBody,
+          url: "/dashboard/berkas",
+          tag: `pmb-verifikasi-${formulirId}`,
+          deduplicationId: `${formulirId}-${statusBerkas}`,
+        });
       }
 
       return formulirUpdate;
@@ -216,7 +230,7 @@ export async function finalisasiPendaftaranAction(formulirId) {
       if (!nomor) {
         try {
           const seqRes = await tx.$queryRaw`SELECT nextval('seq_nomor_pendaftaran') as seq`;
-          const nextNum = seqRes[0]?.seq || 1;
+          const nextNum = Number(seqRes[0]?.seq || 1n);
           nomor = `PMB-2027-${String(nextNum).padStart(6, "0")}`;
         } catch {
           const count = await tx.formulirPendaftaran.count();
@@ -238,7 +252,17 @@ export async function finalisasiPendaftaranAction(formulirId) {
     await safeRevalidate("/dashboard/berkas");
     await safeRevalidate("/dashboard");
     await safeRevalidate("/admin/verifikasi");
-
+    if (hasil.mahasiswaId) {
+      await enqueueNotificationJob({
+        targetId: hasil.mahasiswaId,
+        targetType: "MAHASISWA",
+        title: "Pendaftaran Berhasil Dikirim",
+        body: `Formulir ${hasil.nomorPendaftaran} telah diterima panitia dan sedang antre verifikasi.`,
+        url: "/dashboard",
+        tag: `pmb-finalisasi-${formulirId}`,
+        deduplicationId: `${formulirId}-finalisasi`,
+      });
+    }
     return { success: true, nomorPendaftaran: hasil.nomorPendaftaran };
   } catch (error) {
     console.error("Gagal finalisasi pendaftaran:", error);

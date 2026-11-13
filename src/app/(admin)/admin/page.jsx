@@ -10,6 +10,7 @@ import {
   Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { NotifikasiWebPushPrompt } from "@/components/notification/notif-prompt";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDaftarPendaftarAdmin, getStatistikAdmin } from "@/lib/data-admin";
@@ -57,6 +58,7 @@ async function KontenAdminDashboard() {
         </div>
 
         <div className="flex items-center gap-3">
+          <NotifikasiWebPushPrompt userType="ADMIN" compact />
           <Button asChild className="rounded-xl bg-[#4B6E5A] px-5 text-sm font-semibold text-white hover:bg-[#5C836A] shadow-sm">
             <Link href="/admin/verifikasi" className="flex items-center gap-2">
               <FileCheck2 className="size-4" />

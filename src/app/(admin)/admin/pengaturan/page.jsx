@@ -1,5 +1,6 @@
 import { Bell, CheckCircle2, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { NotifikasiWebPushPrompt } from "@/components/notification/notif-prompt";
 
 export const metadata = {
   title: "Pengaturan & Web Push",
@@ -65,6 +66,10 @@ export default function PengaturanAdminPage() {
             <p className="text-sm font-bold text-neutral-900">perangkat_notifikasi</p>
             <p className="text-[11px] text-neutral-500 font-mono">Prisma model sync</p>
           </div>
+        </div>
+
+        <div className="pt-2">
+          <NotifikasiWebPushPrompt userType="ADMIN" />
         </div>
       </div>
 
