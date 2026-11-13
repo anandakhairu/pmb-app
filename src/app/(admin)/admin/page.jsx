@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -26,10 +27,17 @@ const STATUS_BADGE = {
   TERVERIFIKASI: { label: "Terverifikasi", variant: "success" },
 };
 
-export default async function AdminDashboardPage() {
+export default function AdminDashboardPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-sm text-neutral-500">Memuat dashboard analytics...</div>}>
+      <KontenAdminDashboard />
+    </Suspense>
+  );
+}
+
+async function KontenAdminDashboard() {
   const stats = await getStatistikAdmin();
   const pendaftarTerbaru = await getDaftarPendaftarAdmin();
-
   return (
     <div className="space-y-8">
       {/* ----------------------------- HEADER & WELCOME ----------------------------- */}

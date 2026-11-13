@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Pemberitahuan, Stepper, StatusBadge } from "@/components/mahasiswa/status";
@@ -42,7 +43,15 @@ function susunPemberitahuan(formulir) {
   }
 }
 
-export default async function BerandaPage() {
+export default function BerandaPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-sm text-neutral-500">Memuat beranda pendaftar...</div>}>
+      <KontenBeranda />
+    </Suspense>
+  );
+}
+
+async function KontenBeranda() {
   const { mahasiswa, formulir, berkas } = await getDataMahasiswa();
   const tahap = hitungTahap(formulir);
   const notif = susunPemberitahuan(formulir);

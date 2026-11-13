@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRight, Hourglass, Info, Lock } from "lucide-react";
 import { Logo } from "@/components/logo";
@@ -41,7 +42,15 @@ function KotakInfo({ ikon: Ikon, judul, isi, aksi }) {
   );
 }
 
-export default async function KelulusanPage() {
+export default function KelulusanPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-sm text-neutral-500">Memuat hasil seleksi...</div>}>
+      <KontenKelulusan />
+    </Suspense>
+  );
+}
+
+async function KontenKelulusan() {
   const { mahasiswa, formulir } = await getDataMahasiswa();
   const { statusBerkas, statusKelulusan, prodi, jalur } = formulir;
   const registrasi = JADWAL.find((j) => j.tahap.toLowerCase().includes("registrasi ulang"));

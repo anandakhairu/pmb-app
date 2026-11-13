@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FieldError, inputClass, labelClass } from "@/components/auth/auth-shell";
+import { simpanBiodataAction } from "@/lib/server/actions";
 
 // Validasi lapis 1 (UI). Pola sengaja sama dengan CHECK constraint di
 // prisma/constraints.sql: chk_maba_nik_16_digit, chk_maba_no_hp,
@@ -94,13 +95,16 @@ export function FormBiodata({ mahasiswa, sekolah, terkunci = false }) {
     setGalat({});
     setMenyimpan(true);
     try {
-      // TODO (server action): validasi ulang dengan skema yang sama (lapis 2), cek
-      // kepemilikan data lewat sesi, lalu upsert calon_mahasiswa + data_asal_sekolah
-      // dan naikkan formulir_pendaftaran.langkah_terakhir.
-      await new Promise((r) => setTimeout(r, 800)); // simulasi
+      const res = await simpanBiodataAction({
+        ...hasil.data,
+        mahasiswaId: mahasiswa.id,
+      });
+      if (!res.success) {
+        throw new Error(res.error);
+      }
       setTersimpan(true);
-    } catch {
-      setGalatForm("Data belum tersimpan. Periksa koneksi lalu coba lagi.");
+    } catch (err) {
+      setGalatForm(err.message || "Data belum tersimpan. Periksa koneksi lalu coba lagi.");
     } finally {
       setMenyimpan(false);
     }

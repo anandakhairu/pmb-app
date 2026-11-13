@@ -26,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { simpanVerifikasiBerkasAction } from "@/lib/server/actions";
 
 
 export function SplitViewVerifikasi({ pendaftar }) {
@@ -92,21 +93,30 @@ export function SplitViewVerifikasi({ pendaftar }) {
     setNotifSukses(null);
 
     try {
-      // Simulasi pemrosesan backend (Database Update + Antrean Web Push Worker)
-      await new Promise((r) => setTimeout(r, 1000));
+      const res = await simpanVerifikasiBerkasAction({
+        formulirId: pendaftar.id,
+        statusBerkas: statusFormulir,
+        catatanRevisi: statusFormulir === "REVISI" ? catatanUmum : null,
+        hasilPerBerkas: statusPerDokumen,
+        kirimNotifikasi: kirimWebPush,
+      });
+
+      if (!res.success) {
+        throw new Error(res.error);
+      }
 
       setNotifSukses({
         status: statusFormulir,
         pesan:
           statusFormulir === "TERVERIFIKASI"
-            ? "Berkas berhasil diverifikasi dan dinyatakan VALID."
-            : "Permintaan revisi berkas berhasil disimpan.",
+            ? "Berkas berhasil diverifikasi dan dinyatakan VALID di database PostgreSQL."
+            : "Permintaan revisi berkas berhasil disimpan ke database PostgreSQL.",
         webPushSent: kirimWebPush,
       });
 
       router.refresh();
-    } catch {
-      alert("Gagal menyimpan verifikasi. Silakan coba kembali.");
+    } catch (err) {
+      alert("Gagal menyimpan verifikasi: " + err.message);
     } finally {
       setSedangSimpan(false);
     }
