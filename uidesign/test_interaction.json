@@ -1,0 +1,1 @@
+[{"command": "proto.interaction.add", "params": {"id": 1210, "trigger": {"type": "onClick"}, "action": {"type": "navigate", "dest": 1397}}}]

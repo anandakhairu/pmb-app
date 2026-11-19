@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { NotifikasiWebPushPrompt } from "@/components/notification/notif-prompt";
 import { Pemberitahuan, Stepper, StatusBadge } from "@/components/mahasiswa/status";
 import {
   formatTanggal,
@@ -42,7 +44,15 @@ function susunPemberitahuan(formulir) {
   }
 }
 
-export default async function BerandaPage() {
+export default function BerandaPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-sm text-neutral-500">Memuat beranda pendaftar...</div>}>
+      <KontenBeranda />
+    </Suspense>
+  );
+}
+
+async function KontenBeranda() {
   const { mahasiswa, formulir, berkas } = await getDataMahasiswa();
   const tahap = hitungTahap(formulir);
   const notif = susunPemberitahuan(formulir);
@@ -69,6 +79,8 @@ export default async function BerandaPage() {
           Pantau tahapan pendaftaranmu di sini. Tahun akademik {formulir.tahunAkademik}.
         </p>
       </header>
+
+      <NotifikasiWebPushPrompt userType="MAHASISWA" userId={mahasiswa.id} namaPengguna={mahasiswa.namaLengkap} />
 
       <Pemberitahuan {...notif} />
 

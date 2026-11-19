@@ -90,6 +90,15 @@ enum RoleAdmin {
 
   @@map("role_admin")
 }
+enum StatusOutbox {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+
+  @@map("status_outbox")
+}
+
 
 // -----------------------------------------------------------------------------
 // 1. CALON MAHASISWA (pendaftar)
@@ -386,4 +395,31 @@ model Pengumuman {
 
   @@index([dipublikasikan, publishedAt])
   @@map("pengumuman")
+}
+
+// -----------------------------------------------------------------------------
+// 12. OUTBOX NOTIFIKASI (Transactional Outbox untuk Keandalan Web Push)
+// -----------------------------------------------------------------------------
+
+model OutboxNotifikasi {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  targetId       String       @map("target_id") @db.Uuid
+  targetType     String       @map("target_type") @db.VarChar(20) // "MAHASISWA" | "ADMIN"
+  judul          String       @db.VarChar(200)
+  pesan          String       @db.Text
+  url            String       @default("/dashboard") @db.VarChar(500)
+  tag            String?      @db.VarChar(100)
+  idempotencyKey String       @unique @map("idempotency_key") @db.VarChar(255)
+  status         StatusOutbox @default(PENDING)
+  attemptCount   Int          @default(0) @map("attempt_count")
+  lastError      String?      @map("last_error") @db.Text
+  lockedAt       DateTime?    @map("locked_at") @db.Timestamptz(6)
+  leaseToken     String?      @map("lease_token") @db.Uuid
+  deliveredAt    DateTime?    @map("delivered_at") @db.Timestamptz(6)
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([status, createdAt])
+  @@index([targetId, status])
+  @@map("outbox_notifikasi")
 }

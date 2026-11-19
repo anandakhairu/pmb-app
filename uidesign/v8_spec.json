@@ -1,0 +1,1435 @@
+{
+  "meta": {
+    "project_name": "PMB 2026 - Private University Admission Platform",
+    "version": "8.0 FINAL",
+    "task_type": "Complete UI UX Design and Interactive Figma Prototype",
+    "institution_type": "Private University (PTS)",
+    "project_status": "Greenfield",
+    "primary_language": "Indonesian",
+    "secondary_language": "English-ready",
+    "primary_user_role": "Prospective Student / Calon Mahasiswa",
+    "platform": "Desktop Web Only",
+    "deliverable": "Complete Native Editable Figma Project and Fully Connected Interactive Prototype",
+    "completion_requirement": "All required pages, routes, states, interactions, and applicant journeys must be designed, connected, and audited."
+  },
+  "mission": {
+    "role": [
+      "Principal Product Designer",
+      "Senior UX Architect",
+      "Lead Interaction Designer",
+      "Figma Design Systems Architect",
+      "Information Architecture Specialist"
+    ],
+    "objective": "Design a complete, professional, premium, high-fidelity university admission platform for a private university. The product must cover every relevant applicant-facing experience from university discovery to final admission completion.",
+    "execution_mode": "Strict reference-based design execution",
+    "core_principle": "Do not stop at a visual mockup. Design a complete, usable, connected applicant experience.",
+    "priority_order": [
+      "Complete information architecture",
+      "Correct route and page coverage",
+      "Complete applicant user journeys",
+      "Visual fidelity to approved references",
+      "Interaction completeness",
+      "Professional design quality",
+      "Figma editability"
+    ]
+  },
+  "scope_lock": {
+    "included": [
+      "Public university website",
+      "University profile",
+      "Faculty directory",
+      "Program discovery",
+      "Program detail",
+      "Admission information",
+      "Registration waves",
+      "Admission schedule",
+      "Admission requirements",
+      "Tuition information",
+      "Scholarships",
+      "Applicant registration",
+      "Authentication",
+      "Account verification",
+      "Password recovery",
+      "Applicant onboarding",
+      "Application forms",
+      "Single program selection",
+      "Registration wave selection",
+      "Document upload",
+      "Document correction",
+      "Application submission",
+      "Conditional registration payment",
+      "Applicant dashboard",
+      "Application tracking",
+      "Selection schedule",
+      "Examination or interview information",
+      "Admission results",
+      "Acceptance confirmation",
+      "Re-registration",
+      "Enrollment payment when required",
+      "Notifications",
+      "Account settings",
+      "Applicant support",
+      "Legal information",
+      "Error and recovery pages",
+      "Interactive Figma prototype"
+    ],
+    "excluded": [
+      "Multiple admission pathways",
+      "SNBP",
+      "SNBT",
+      "Seleksi Mandiri",
+      "Achievement admission pathway",
+      "Separate regular admission pathway",
+      "Separate examination admission pathway",
+      "Multiple program preferences",
+      "Second-choice program selection",
+      "Admin dashboard",
+      "Administrator portal",
+      "Staff dashboard",
+      "Admission committee interface",
+      "Operator interface",
+      "Super administrator interface",
+      "Mobile website",
+      "Mobile application",
+      "Smartphone mockups",
+      "Tablet-specific designs",
+      "Backend implementation",
+      "Actual payment processing"
+    ],
+    "absolute_rules": [
+      "Design exclusively for one user role: prospective student.",
+      "There must be exactly one admission process.",
+      "Registration waves are time periods, not separate admission pathways.",
+      "Each application has exactly one primary study program.",
+      "All applicants follow one institutional selection process.",
+      "Do not create mobile or tablet frames.",
+      "Do not create any administrative interface.",
+      "Do not create unnecessary features outside applicant needs."
+    ]
+  },
+  "admission_business_model": {
+    "admission_type": "Single Admission Process",
+    "registration_model": "Multiple Registration Waves",
+    "program_preference_count": 1,
+    "selection_process": "One Unified Institutional Selection Process",
+    "registration_wave_examples": [
+      "Gelombang 1",
+      "Gelombang 2",
+      "Gelombang 3"
+    ],
+    "registration_wave_properties": [
+      "Wave name",
+      "Opening date",
+      "Closing date",
+      "Registration status",
+      "Registration fee when applicable",
+      "Payment deadline when applicable",
+      "Registration availability",
+      "Official announcement"
+    ],
+    "wave_statuses": [
+      "Upcoming",
+      "Open",
+      "Closing Soon",
+      "Closed",
+      "Full"
+    ],
+    "wave_rules": [
+      "All waves belong to the same admission process.",
+      "Only one registration wave can be selected per application.",
+      "Only open registration waves are selectable.",
+      "Closing-soon waves remain selectable until the official deadline.",
+      "Upcoming and closed waves cannot be selected for new applications.",
+      "The selected wave must be recorded in the applicant application.",
+      "Different waves may have different official fees or promotional information.",
+      "Never invent registration dates or fees."
+    ],
+    "program_selection_rules": [
+      "The applicant chooses one primary study program.",
+      "Do not implement ranked preferences.",
+      "Do not implement multiple program choices.",
+      "Program changes are only represented through an authorized correction process when permitted."
+    ],
+    "selection_stages": [
+      "Document Review",
+      "Academic Assessment",
+      "Written Examination",
+      "Interview",
+      "Final Evaluation"
+    ],
+    "selection_stage_rules": [
+      "These are stages within one admission process.",
+      "Not all stages are mandatory.",
+      "Only institutionally supported stages should appear.",
+      "Do not create independent admission pathways."
+    ]
+  },
+  "reference_authority": {
+    "reference_a": {
+      "name": "Original PMB 2026 Design Board",
+      "authority": [
+        "Visual identity",
+        "Color distribution",
+        "Typography",
+        "Spacing",
+        "Visual composition",
+        "Design principles"
+      ]
+    },
+    "reference_b": {
+      "name": "Six-Screen PMB Desktop UI UX Collage",
+      "authority": [
+        "Page composition",
+        "Hero layout",
+        "Program directory",
+        "Registration wave interface",
+        "Applicant dashboard",
+        "Program detail",
+        "Application form"
+      ]
+    },
+    "reference_rules": [
+      "Reference A is the visual style authority.",
+      "Reference B is the layout composition authority.",
+      "Preserve the approved visual direction.",
+      "Do not redesign the concept into an unrelated visual style.",
+      "Expand the references into the complete applicant product.",
+      "The reference images are not substitutes for editable Figma screens."
+    ],
+    "six_panel_overview": {
+      "canvas": "2048x2048",
+      "aspect_ratio": "1:1",
+      "layout": "2 columns x 3 rows",
+      "panels": [
+        "01 - Homepage",
+        "02 - Program Directory",
+        "03 - Registration Waves",
+        "04 - Applicant Dashboard",
+        "05 - Program Detail",
+        "06 - Desktop Application Form"
+      ],
+      "mobile_mockups": false,
+      "editable_individual_frames": true
+    }
+  },
+  "art_direction": {
+    "design_style": "Modern Minimalist Premium Academic",
+    "personality": [
+      "Contemporary",
+      "Editorial",
+      "Professional",
+      "Trustworthy",
+      "Welcoming",
+      "Human-centered",
+      "Refined",
+      "Distinctive"
+    ],
+    "visual_principles": [
+      "Typography-led composition",
+      "Intentional whitespace",
+      "Strong information hierarchy",
+      "Authentic university photography",
+      "Balanced image and text proportions",
+      "Purposeful asymmetrical layouts",
+      "Clean navigation",
+      "Restrained interface decoration",
+      "Consistent but non-repetitive visual rhythm"
+    ],
+    "colors": {
+      "primary": "#1554B8",
+      "primary_hover": "#10469B",
+      "accent": "#3689F5",
+      "background": "#F7F9FD",
+      "surface": "#FFFFFF",
+      "muted_surface": "#EEF2FA",
+      "primary_text": "#101A32",
+      "secondary_text": "#63718A",
+      "border": "#DFE6F2",
+      "success": "#20A878",
+      "warning": "#F2BF55",
+      "error": "#D94A55"
+    },
+    "typography": {
+      "family": "Plus Jakarta Sans",
+      "weights": [
+        400,
+        500,
+        600,
+        700
+      ],
+      "desktop": {
+        "hero": "48-56px",
+        "page_title": "36-44px",
+        "section_heading": "28-36px",
+        "card_heading": "17-20px",
+        "body": "14-16px",
+        "supporting_label": "12-13px"
+      }
+    },
+    "desktop_layout": {
+      "primary_viewport": "1440x1024",
+      "secondary_viewport": "1280x900",
+      "maximum_content_width": "1280px",
+      "horizontal_gutter": "40-48px",
+      "spacing_base": "4px",
+      "section_spacing": "64-96px",
+      "card_radius": "14-20px",
+      "button_shape": "Pill-shaped",
+      "grid": "12-column desktop grid"
+    }
+  },
+  "anti_ai_slop": {
+    "strictly_forbidden": [
+      "Generic AI-generated SaaS landing page",
+      "Repetitive three-column feature card sections",
+      "Tiny blue eyebrow labels above every heading",
+      "Oversized headings repeated in every section",
+      "Excessive gradients",
+      "Excessive glassmorphism",
+      "Random floating decorative circles",
+      "Random decorative blobs",
+      "Excessive rounded cards",
+      "Excessive pill-shaped elements",
+      "Fake testimonials",
+      "Fabricated university statistics",
+      "Random stock photographs",
+      "Unnecessary icon decorations",
+      "Excessive shadows",
+      "Repeated identical section compositions",
+      "Inconsistent spacing",
+      "Inconsistent typography",
+      "Artificially crowded layouts",
+      "Unnecessary section dividers",
+      "Decorative elements without a usability purpose"
+    ],
+    "mandatory_quality_rules": [
+      "Each section must have a layout justified by its content.",
+      "Do not repeat the same composition across consecutive sections.",
+      "Use photography as meaningful content, not decoration.",
+      "Use appropriate image aspect ratios.",
+      "Prioritize strong typography and visual hierarchy.",
+      "Preserve natural whitespace.",
+      "Use cards only when grouping information is meaningful.",
+      "Use clear visual differences between primary and secondary actions.",
+      "Maintain a recognizable university brand identity.",
+      "Design must look art-directed by an experienced human product design team."
+    ],
+    "visual_review_questions": [
+      "Does the interface look like a real university product rather than a generic template?",
+      "Does every section have a clear purpose?",
+      "Are the headings visually balanced?",
+      "Are cards being overused?",
+      "Is photography relevant to the content?",
+      "Is the page visually distinctive without unnecessary decoration?",
+      "Can applicants understand the next action immediately?"
+    ]
+  },
+  "figma_file_structure": [
+    "00 - Project Overview",
+    "01 - Six-Screen Design Board",
+    "02 - Design Foundations",
+    "03 - Design System and Components",
+    "04 - Public Website",
+    "05 - University and Program Discovery",
+    "06 - Admission and Registration Waves",
+    "07 - Authentication",
+    "08 - Applicant Onboarding",
+    "09 - Application Wizard",
+    "10 - Document and Payment Experience",
+    "11 - Applicant Dashboard",
+    "12 - Selection and Examination",
+    "13 - Admission Results",
+    "14 - Re-registration",
+    "15 - Account and Support",
+    "16 - System States",
+    "17 - Interactive Prototype",
+    "18 - Route Coverage and QA"
+  ],
+  "route_registry": {
+    "public_website": [
+      {
+        "id": "PUB-001",
+        "path": "/",
+        "name": "Homepage"
+      },
+      {
+        "id": "PUB-002",
+        "path": "/about",
+        "name": "About University"
+      },
+      {
+        "id": "PUB-003",
+        "path": "/campus",
+        "name": "Campus Information"
+      },
+      {
+        "id": "PUB-004",
+        "path": "/faculties",
+        "name": "Faculty Directory"
+      },
+      {
+        "id": "PUB-005",
+        "path": "/faculties/[facultySlug]",
+        "name": "Faculty Detail"
+      },
+      {
+        "id": "PUB-006",
+        "path": "/programs",
+        "name": "Program Directory"
+      },
+      {
+        "id": "PUB-007",
+        "path": "/programs/[programSlug]",
+        "name": "Program Detail"
+      },
+      {
+        "id": "PUB-008",
+        "path": "/admission",
+        "name": "Admission Overview"
+      },
+      {
+        "id": "PUB-009",
+        "path": "/admission/process",
+        "name": "Single Admission Process"
+      },
+      {
+        "id": "PUB-010",
+        "path": "/admission/waves",
+        "name": "Registration Waves"
+      },
+      {
+        "id": "PUB-011",
+        "path": "/admission/waves/[waveId]",
+        "name": "Registration Wave Detail"
+      },
+      {
+        "id": "PUB-012",
+        "path": "/admission/requirements",
+        "name": "Admission Requirements"
+      },
+      {
+        "id": "PUB-013",
+        "path": "/admission/schedule",
+        "name": "Admission Schedule"
+      },
+      {
+        "id": "PUB-014",
+        "path": "/tuition",
+        "name": "Tuition and Fees"
+      },
+      {
+        "id": "PUB-015",
+        "path": "/scholarships",
+        "name": "Scholarship Directory"
+      },
+      {
+        "id": "PUB-016",
+        "path": "/scholarships/[scholarshipSlug]",
+        "name": "Scholarship Detail"
+      },
+      {
+        "id": "PUB-017",
+        "path": "/guide",
+        "name": "Registration Guide"
+      },
+      {
+        "id": "PUB-018",
+        "path": "/faq",
+        "name": "Frequently Asked Questions"
+      },
+      {
+        "id": "PUB-019",
+        "path": "/search",
+        "name": "Global Search Results"
+      },
+      {
+        "id": "PUB-020",
+        "path": "/announcements",
+        "name": "Announcements Directory"
+      },
+      {
+        "id": "PUB-021",
+        "path": "/announcements/[announcementSlug]",
+        "name": "Announcement Detail"
+      },
+      {
+        "id": "PUB-022",
+        "path": "/contact",
+        "name": "Contact University"
+      },
+      {
+        "id": "PUB-023",
+        "path": "/help",
+        "name": "Public Help Center"
+      },
+      {
+        "id": "PUB-024",
+        "path": "/terms",
+        "name": "Terms and Conditions"
+      },
+      {
+        "id": "PUB-025",
+        "path": "/privacy",
+        "name": "Privacy Policy"
+      },
+      {
+        "id": "PUB-026",
+        "path": "/cookies",
+        "name": "Cookie Policy"
+      },
+      {
+        "id": "PUB-027",
+        "path": "/registration-closed",
+        "name": "Registration Currently Closed"
+      }
+    ],
+    "authentication": [
+      {
+        "id": "AUTH-001",
+        "path": "/register",
+        "name": "Create Applicant Account"
+      },
+      {
+        "id": "AUTH-002",
+        "path": "/register/check-email",
+        "name": "Check Verification Email"
+      },
+      {
+        "id": "AUTH-003",
+        "path": "/verify-email",
+        "name": "Email Verification"
+      },
+      {
+        "id": "AUTH-004",
+        "path": "/verify-email/success",
+        "name": "Email Verification Success"
+      },
+      {
+        "id": "AUTH-005",
+        "path": "/verify-email/expired",
+        "name": "Expired Verification Link"
+      },
+      {
+        "id": "AUTH-006",
+        "path": "/verify-email/invalid",
+        "name": "Invalid Verification Link"
+      },
+      {
+        "id": "AUTH-007",
+        "path": "/login",
+        "name": "Applicant Login"
+      },
+      {
+        "id": "AUTH-008",
+        "path": "/forgot-password",
+        "name": "Forgot Password"
+      },
+      {
+        "id": "AUTH-009",
+        "path": "/forgot-password/sent",
+        "name": "Password Reset Email Sent"
+      },
+      {
+        "id": "AUTH-010",
+        "path": "/reset-password",
+        "name": "Reset Password"
+      },
+      {
+        "id": "AUTH-011",
+        "path": "/reset-password/success",
+        "name": "Password Reset Success"
+      },
+      {
+        "id": "AUTH-012",
+        "path": "/logout/confirmation",
+        "name": "Logout Confirmation"
+      }
+    ],
+    "onboarding": [
+      {
+        "id": "ONB-001",
+        "path": "/onboarding/welcome",
+        "name": "Onboarding Welcome"
+      },
+      {
+        "id": "ONB-002",
+        "path": "/onboarding/profile",
+        "name": "Basic Applicant Profile"
+      },
+      {
+        "id": "ONB-003",
+        "path": "/onboarding/contact",
+        "name": "Contact Information"
+      },
+      {
+        "id": "ONB-004",
+        "path": "/onboarding/address",
+        "name": "Applicant Address"
+      },
+      {
+        "id": "ONB-005",
+        "path": "/onboarding/education",
+        "name": "Educational Background"
+      },
+      {
+        "id": "ONB-006",
+        "path": "/onboarding/review",
+        "name": "Onboarding Review"
+      },
+      {
+        "id": "ONB-007",
+        "path": "/onboarding/complete",
+        "name": "Onboarding Complete"
+      }
+    ],
+    "application_wizard": [
+      {
+        "id": "APP-001",
+        "path": "/application/new",
+        "name": "Start Application"
+      },
+      {
+        "id": "APP-002",
+        "path": "/application/program",
+        "name": "Select One Primary Program"
+      },
+      {
+        "id": "APP-003",
+        "path": "/application/wave",
+        "name": "Select One Registration Wave"
+      },
+      {
+        "id": "APP-004",
+        "path": "/application/personal-data",
+        "name": "Personal Identity Information"
+      },
+      {
+        "id": "APP-005",
+        "path": "/application/family",
+        "name": "Parent or Guardian Information"
+      },
+      {
+        "id": "APP-006",
+        "path": "/application/address",
+        "name": "Address and Contact Information"
+      },
+      {
+        "id": "APP-007",
+        "path": "/application/education",
+        "name": "Educational Background"
+      },
+      {
+        "id": "APP-008",
+        "path": "/application/achievements",
+        "name": "Achievements and Additional Information"
+      },
+      {
+        "id": "APP-009",
+        "path": "/application/documents",
+        "name": "Required Document Upload"
+      },
+      {
+        "id": "APP-010",
+        "path": "/application/documents/[documentId]",
+        "name": "Document Preview"
+      },
+      {
+        "id": "APP-011",
+        "path": "/application/review",
+        "name": "Application Review"
+      },
+      {
+        "id": "APP-012",
+        "path": "/application/declaration",
+        "name": "Applicant Declaration"
+      },
+      {
+        "id": "APP-013",
+        "path": "/application/confirmation",
+        "name": "Final Submission Confirmation"
+      },
+      {
+        "id": "APP-014",
+        "path": "/application/submitted",
+        "name": "Application Submitted Successfully"
+      }
+    ],
+    "application_correction": [
+      {
+        "id": "COR-001",
+        "path": "/dashboard/applications/[applicationId]/correction",
+        "name": "Correction Overview"
+      },
+      {
+        "id": "COR-002",
+        "path": "/dashboard/applications/[applicationId]/correction/documents",
+        "name": "Correction Document Submission"
+      },
+      {
+        "id": "COR-003",
+        "path": "/dashboard/applications/[applicationId]/correction/review",
+        "name": "Correction Review"
+      },
+      {
+        "id": "COR-004",
+        "path": "/dashboard/applications/[applicationId]/correction/submitted",
+        "name": "Correction Resubmission Success"
+      }
+    ],
+    "registration_payment": [
+      {
+        "id": "PAY-001",
+        "path": "/dashboard/applications/[applicationId]/payment",
+        "name": "Registration Payment Overview"
+      },
+      {
+        "id": "PAY-002",
+        "path": "/dashboard/applications/[applicationId]/payment/method",
+        "name": "Select Payment Method"
+      },
+      {
+        "id": "PAY-003",
+        "path": "/dashboard/applications/[applicationId]/payment/instructions",
+        "name": "Payment Instructions"
+      },
+      {
+        "id": "PAY-004",
+        "path": "/dashboard/applications/[applicationId]/payment/pending",
+        "name": "Payment Pending"
+      },
+      {
+        "id": "PAY-005",
+        "path": "/dashboard/applications/[applicationId]/payment/success",
+        "name": "Payment Success"
+      },
+      {
+        "id": "PAY-006",
+        "path": "/dashboard/applications/[applicationId]/payment/failed",
+        "name": "Payment Failed"
+      },
+      {
+        "id": "PAY-007",
+        "path": "/dashboard/applications/[applicationId]/payment/expired",
+        "name": "Payment Expired"
+      },
+      {
+        "id": "PAY-008",
+        "path": "/dashboard/applications/[applicationId]/payment/receipt",
+        "name": "Registration Payment Receipt"
+      }
+    ],
+    "applicant_dashboard": [
+      {
+        "id": "DASH-001",
+        "path": "/dashboard",
+        "name": "Applicant Dashboard Overview"
+      },
+      {
+        "id": "DASH-002",
+        "path": "/dashboard/profile",
+        "name": "Applicant Profile"
+      },
+      {
+        "id": "DASH-003",
+        "path": "/dashboard/profile/edit",
+        "name": "Edit Applicant Profile"
+      },
+      {
+        "id": "DASH-004",
+        "path": "/dashboard/applications",
+        "name": "My Applications"
+      },
+      {
+        "id": "DASH-005",
+        "path": "/dashboard/applications/[applicationId]",
+        "name": "Application Detail and Status"
+      },
+      {
+        "id": "DASH-006",
+        "path": "/dashboard/documents",
+        "name": "Centralized Document Management"
+      },
+      {
+        "id": "DASH-007",
+        "path": "/dashboard/documents/[documentId]",
+        "name": "Applicant Document Detail"
+      },
+      {
+        "id": "DASH-008",
+        "path": "/dashboard/payments",
+        "name": "Payment History"
+      },
+      {
+        "id": "DASH-009",
+        "path": "/dashboard/payments/[paymentId]",
+        "name": "Payment Transaction Detail"
+      },
+      {
+        "id": "DASH-010",
+        "path": "/dashboard/notifications",
+        "name": "Applicant Notifications"
+      },
+      {
+        "id": "DASH-011",
+        "path": "/dashboard/notifications/[notificationId]",
+        "name": "Notification Detail"
+      }
+    ],
+    "selection": [
+      {
+        "id": "SEL-001",
+        "path": "/dashboard/selection",
+        "name": "Selection Overview"
+      },
+      {
+        "id": "SEL-002",
+        "path": "/dashboard/selection/schedule",
+        "name": "Selection Schedule"
+      },
+      {
+        "id": "SEL-003",
+        "path": "/dashboard/selection/assessment/[assessmentId]",
+        "name": "Assessment or Examination Detail"
+      },
+      {
+        "id": "SEL-004",
+        "path": "/dashboard/selection/instructions",
+        "name": "Assessment Instructions"
+      },
+      {
+        "id": "SEL-005",
+        "path": "/dashboard/selection/status",
+        "name": "Selection Status"
+      },
+      {
+        "id": "SEL-006",
+        "path": "/dashboard/selection/updates",
+        "name": "Selection Updates"
+      }
+    ],
+    "admission_results": [
+      {
+        "id": "RES-001",
+        "path": "/dashboard/results",
+        "name": "Admission Results Overview"
+      },
+      {
+        "id": "RES-002",
+        "path": "/dashboard/results/pending",
+        "name": "Results Not Yet Published"
+      },
+      {
+        "id": "RES-003",
+        "path": "/dashboard/results/accepted",
+        "name": "Accepted Applicant Result"
+      },
+      {
+        "id": "RES-004",
+        "path": "/dashboard/results/not-accepted",
+        "name": "Unsuccessful Application Result"
+      },
+      {
+        "id": "RES-005",
+        "path": "/dashboard/results/waitlisted",
+        "name": "Waitlist Result When Supported"
+      },
+      {
+        "id": "RES-006",
+        "path": "/dashboard/results/offer",
+        "name": "Admission Offer Detail"
+      },
+      {
+        "id": "RES-007",
+        "path": "/dashboard/results/accept",
+        "name": "Accept Admission Offer"
+      },
+      {
+        "id": "RES-008",
+        "path": "/dashboard/results/confirmation",
+        "name": "Acceptance Confirmation"
+      }
+    ],
+    "reregistration": [
+      {
+        "id": "RER-001",
+        "path": "/dashboard/reregistration",
+        "name": "Re-registration Overview"
+      },
+      {
+        "id": "RER-002",
+        "path": "/dashboard/reregistration/documents",
+        "name": "Enrollment Documents"
+      },
+      {
+        "id": "RER-003",
+        "path": "/dashboard/reregistration/payment",
+        "name": "Enrollment Payment When Required"
+      },
+      {
+        "id": "RER-004",
+        "path": "/dashboard/reregistration/profile",
+        "name": "Enrollment Information Confirmation"
+      },
+      {
+        "id": "RER-005",
+        "path": "/dashboard/reregistration/review",
+        "name": "Re-registration Review"
+      },
+      {
+        "id": "RER-006",
+        "path": "/dashboard/reregistration/submitted",
+        "name": "Re-registration Submitted"
+      },
+      {
+        "id": "RER-007",
+        "path": "/dashboard/admission/completed",
+        "name": "Admission Completed"
+      }
+    ],
+    "account_and_support": [
+      {
+        "id": "ACC-001",
+        "path": "/dashboard/settings",
+        "name": "Account Settings"
+      },
+      {
+        "id": "ACC-002",
+        "path": "/dashboard/settings/personal",
+        "name": "Personal Account Information"
+      },
+      {
+        "id": "ACC-003",
+        "path": "/dashboard/settings/password",
+        "name": "Change Password"
+      },
+      {
+        "id": "ACC-004",
+        "path": "/dashboard/settings/security",
+        "name": "Account Security"
+      },
+      {
+        "id": "ACC-005",
+        "path": "/dashboard/help",
+        "name": "Applicant Help Center"
+      },
+      {
+        "id": "ACC-006",
+        "path": "/dashboard/help/new",
+        "name": "Create Support Request"
+      },
+      {
+        "id": "ACC-007",
+        "path": "/dashboard/help/[ticketId]",
+        "name": "Support Request Detail"
+      },
+      {
+        "id": "ACC-008",
+        "path": "/session-expired",
+        "name": "Session Expired"
+      }
+    ],
+    "system_and_error": [
+      {
+        "id": "SYS-001",
+        "path": "/404",
+        "name": "Page Not Found"
+      },
+      {
+        "id": "SYS-002",
+        "path": "/403",
+        "name": "Access Denied"
+      },
+      {
+        "id": "SYS-003",
+        "path": "/500",
+        "name": "Unexpected System Error"
+      },
+      {
+        "id": "SYS-004",
+        "path": "/maintenance",
+        "name": "Scheduled Maintenance"
+      },
+      {
+        "id": "SYS-005",
+        "path": "/registration-closed",
+        "name": "No Available Registration Wave"
+      }
+    ]
+  },
+  "route_semantics": {
+    "rules": [
+      "Each unique route template must have a corresponding editable Figma frame.",
+      "Dynamic routes must use reusable detail templates rather than duplicated identical screens.",
+      "Different user tasks must have separate screens.",
+      "Application wizard document upload and centralized dashboard document management must have distinct layouts.",
+      "Registration payment and enrollment payment must remain separate.",
+      "Application list and application detail must remain separate.",
+      "Selection process screens must be applicant-facing.",
+      "Private result and application information must only be presented inside applicant portal contexts.",
+      "Conditional pages must be labeled and connected according to their business rules.",
+      "No route may silently disappear from the coverage audit."
+    ],
+    "query_and_state_rules": [
+      "Search terms are prototype variables or query-state examples, not separate page templates.",
+      "Form validation states may use component variants or dedicated state frames.",
+      "Different wave statuses must use component variants.",
+      "Dynamic program data must reuse the program detail template.",
+      "Dynamic notification and payment data must reuse detail templates."
+    ]
+  },
+  "application_state_machine": {
+    "states": [
+      "DRAFT",
+      "PROFILE_INCOMPLETE",
+      "DOCUMENTS_INCOMPLETE",
+      "DOCUMENTS_PENDING_REVIEW",
+      "CORRECTION_REQUIRED",
+      "DOCUMENTS_APPROVED",
+      "PAYMENT_PENDING",
+      "PAYMENT_VERIFIED",
+      "SUBMITTED",
+      "UNDER_REVIEW",
+      "ASSESSMENT_SCHEDULED",
+      "ASSESSMENT_COMPLETED",
+      "FINAL_EVALUATION",
+      "RESULT_PENDING",
+      "ACCEPTED",
+      "NOT_ACCEPTED",
+      "WAITLISTED",
+      "ACCEPTANCE_CONFIRMED",
+      "REREGISTRATION_PENDING",
+      "REREGISTRATION_COMPLETED",
+      "ADMISSION_COMPLETED"
+    ],
+    "constraints": [
+      "The applicant cannot manually change official application statuses.",
+      "Payment stages are conditional.",
+      "Assessment stages are conditional.",
+      "Waitlist is conditional.",
+      "Each status must have a clear applicant-facing description.",
+      "Each status must show the relevant next action.",
+      "Invalid transitions must not be presented as available actions.",
+      "The design must include a state transition diagram."
+    ]
+  },
+  "figma_components": {
+    "navigation": [
+      "Desktop Navbar",
+      "Dropdown Menu",
+      "Breadcrumb",
+      "Tab Navigation",
+      "Applicant Sidebar",
+      "Sidebar Item",
+      "Pagination"
+    ],
+    "buttons": [
+      "Primary",
+      "Secondary",
+      "Tertiary",
+      "Text",
+      "Icon",
+      "Loading",
+      "Disabled"
+    ],
+    "forms": [
+      "Text Input",
+      "Email Input",
+      "Password Input",
+      "Phone Input",
+      "Date Input",
+      "Search Input",
+      "Select",
+      "Checkbox",
+      "Radio",
+      "Textarea",
+      "File Upload",
+      "Multi-file Upload"
+    ],
+    "admission": [
+      "Registration Wave Card",
+      "Wave Status Badge",
+      "Program Card",
+      "Scholarship Card",
+      "Schedule Item",
+      "Deadline Indicator",
+      "Admission Information Banner"
+    ],
+    "applicant": [
+      "Progress Stepper",
+      "Application Status",
+      "Document Status",
+      "Payment Status",
+      "Application Summary",
+      "Notification Item",
+      "Assessment Card",
+      "Admission Result Card"
+    ],
+    "feedback": [
+      "Modal",
+      "Confirmation Dialog",
+      "Toast",
+      "Alert",
+      "Empty State",
+      "Loading State",
+      "Error State",
+      "Success State"
+    ],
+    "component_states": [
+      "Default",
+      "Hover",
+      "Focused",
+      "Active",
+      "Filled",
+      "Disabled",
+      "Loading",
+      "Error",
+      "Success"
+    ]
+  },
+  "prototype_user_journeys": [
+    {
+      "id": "FLOW-001",
+      "name": "Public Discovery",
+      "steps": [
+        "/",
+        "/programs",
+        "/programs/[programSlug]",
+        "/admission",
+        "/admission/process",
+        "/admission/waves",
+        "/admission/requirements",
+        "/guide",
+        "/register"
+      ]
+    },
+    {
+      "id": "FLOW-002",
+      "name": "New Applicant Registration",
+      "steps": [
+        "/register",
+        "/register/check-email",
+        "/verify-email",
+        "/verify-email/success",
+        "/login",
+        "/onboarding/welcome",
+        "/onboarding/profile",
+        "/onboarding/contact",
+        "/onboarding/address",
+        "/onboarding/education",
+        "/onboarding/review",
+        "/onboarding/complete",
+        "/dashboard"
+      ]
+    },
+    {
+      "id": "FLOW-003",
+      "name": "Complete Single Application",
+      "steps": [
+        "/dashboard",
+        "/application/new",
+        "/application/program",
+        "/application/wave",
+        "/application/personal-data",
+        "/application/family",
+        "/application/address",
+        "/application/education",
+        "/application/achievements",
+        "/application/documents",
+        "/application/review",
+        "/application/declaration",
+        "/application/confirmation",
+        "/application/submitted"
+      ]
+    },
+    {
+      "id": "FLOW-004",
+      "name": "Registration Payment",
+      "conditional": true,
+      "steps": [
+        "/dashboard/applications/[applicationId]",
+        "/dashboard/applications/[applicationId]/payment",
+        "/dashboard/applications/[applicationId]/payment/method",
+        "/dashboard/applications/[applicationId]/payment/instructions",
+        "/dashboard/applications/[applicationId]/payment/pending",
+        "/dashboard/applications/[applicationId]/payment/success",
+        "/dashboard/applications/[applicationId]/payment/receipt"
+      ],
+      "alternative_states": [
+        "Payment Failed",
+        "Payment Expired",
+        "Payment Retry",
+        "Payment Not Required"
+      ]
+    },
+    {
+      "id": "FLOW-005",
+      "name": "Document Correction",
+      "conditional": true,
+      "steps": [
+        "/dashboard/applications/[applicationId]",
+        "/dashboard/applications/[applicationId]/correction",
+        "/dashboard/applications/[applicationId]/correction/documents",
+        "/dashboard/applications/[applicationId]/correction/review",
+        "/dashboard/applications/[applicationId]/correction/submitted"
+      ]
+    },
+    {
+      "id": "FLOW-006",
+      "name": "Selection Process",
+      "steps": [
+        "/dashboard/selection",
+        "/dashboard/selection/schedule",
+        "/dashboard/selection/assessment/[assessmentId]",
+        "/dashboard/selection/instructions",
+        "/dashboard/selection/status",
+        "/dashboard/selection/updates"
+      ]
+    },
+    {
+      "id": "FLOW-007",
+      "name": "Accepted Applicant",
+      "steps": [
+        "/dashboard/results/pending",
+        "/dashboard/results/accepted",
+        "/dashboard/results/offer",
+        "/dashboard/results/accept",
+        "/dashboard/results/confirmation",
+        "/dashboard/reregistration",
+        "/dashboard/reregistration/documents",
+        "/dashboard/reregistration/payment",
+        "/dashboard/reregistration/profile",
+        "/dashboard/reregistration/review",
+        "/dashboard/reregistration/submitted",
+        "/dashboard/admission/completed"
+      ]
+    },
+    {
+      "id": "FLOW-008",
+      "name": "Unsuccessful Applicant",
+      "steps": [
+        "/dashboard/results/pending",
+        "/dashboard/results/not-accepted",
+        "/dashboard/help"
+      ]
+    },
+    {
+      "id": "FLOW-009",
+      "name": "Applicant Account Management",
+      "steps": [
+        "/dashboard",
+        "/dashboard/profile",
+        "/dashboard/settings",
+        "/dashboard/settings/personal",
+        "/dashboard/settings/password",
+        "/dashboard/settings/security",
+        "/dashboard/notifications",
+        "/dashboard/help",
+        "/dashboard/help/new",
+        "/logout/confirmation"
+      ]
+    }
+  ],
+  "prototype_requirements": {
+    "start_points": [
+      "Public Visitor",
+      "New Applicant",
+      "Returning Applicant",
+      "Single Application",
+      "Registration Payment",
+      "Document Correction",
+      "Selection Process",
+      "Accepted Applicant",
+      "Unsuccessful Applicant",
+      "Account Management"
+    ],
+    "interaction_rules": [
+      "Every primary CTA must have a valid destination.",
+      "Every navigation item must be connected.",
+      "Every form step must support previous and next navigation.",
+      "Every dropdown must demonstrate its open and closed states.",
+      "Every tab must demonstrate its selected state.",
+      "Every accordion must expand and collapse.",
+      "Every modal must support close and cancel actions.",
+      "Every error state must provide a recovery action.",
+      "Every success state must have a logical continuation.",
+      "Conditional payments must have alternative branches.",
+      "Closed waves cannot be selected.",
+      "The applicant cannot select multiple programs.",
+      "No connection may lead to an administrative interface."
+    ],
+    "simulation_limitations": [
+      "Prototype interactions simulate UI behavior only.",
+      "Do not claim real authentication.",
+      "Do not claim real document storage.",
+      "Do not claim real payment processing.",
+      "Do not claim official admission decisions.",
+      "Use Figma variables, component variants, overlays, and interactive components where supported."
+    ]
+  },
+  "figma_native_requirements": {
+    "native_frames": true,
+    "auto_layout": true,
+    "reusable_components": true,
+    "component_variants": true,
+    "component_properties": true,
+    "shared_color_styles": true,
+    "shared_typography_styles": true,
+    "variables": true,
+    "interactive_components": true,
+    "connected_prototype": true,
+    "editable_layers": true,
+    "organized_pages": true,
+    "meaningful_frame_names": true,
+    "flattened_interface_images_as_deliverable": false,
+    "desktop_frames_only": true
+  },
+  "content_and_asset_integrity": {
+    "university_name": "Universitas [Nama Institusi]",
+    "logo": "Editable temporary wordmark, not a fabricated official logo",
+    "photography": "Authentic, contextually relevant university photography",
+    "programs": "Clearly labeled demonstration content unless actual data is supplied",
+    "dates": "Clearly labeled demonstration dates",
+    "tuition": "Never fabricate official tuition figures",
+    "accreditation": "Never invent official accreditation claims",
+    "statistics": "Never invent university statistics",
+    "scholarships": "Use editable example content",
+    "legal_text": "Clearly marked editable template content",
+    "language_quality": "Natural, accurate, consistent Indonesian"
+  },
+  "figma_page_organization": [
+    "00 - Project Overview",
+    "01 - Six-Screen Design Board",
+    "02 - Design Foundations",
+    "03 - Design System",
+    "04 - Public Website",
+    "05 - University and Program Discovery",
+    "06 - Admission and Registration Waves",
+    "07 - Authentication",
+    "08 - Applicant Onboarding",
+    "09 - Application Wizard",
+    "10 - Documents and Payment",
+    "11 - Applicant Dashboard",
+    "12 - Selection and Examination",
+    "13 - Admission Results",
+    "14 - Re-registration",
+    "15 - Account and Support",
+    "16 - Global System States",
+    "17 - Interactive Prototype",
+    "18 - Route Coverage and QA"
+  ],
+  "route_coverage_audit": {
+    "required_fields": [
+      "Route ID",
+      "Exact Route",
+      "Page Name",
+      "Page Category",
+      "Applicant Journey Stage",
+      "Desktop Figma Frame",
+      "Incoming Connections",
+      "Outgoing Connections",
+      "Primary CTA",
+      "Secondary Actions",
+      "Error States",
+      "Success States",
+      "Conditional Logic",
+      "QA Status"
+    ],
+    "statuses": [
+      "NOT STARTED",
+      "IN PROGRESS",
+      "DESIGNED",
+      "CONNECTED",
+      "TESTED",
+      "APPROVED"
+    ],
+    "mandatory_rules": [
+      "Every route in route_registry must appear in the audit matrix.",
+      "No required route may be omitted.",
+      "Dynamic routes require reusable detail templates.",
+      "Distinct applicant tasks require distinct frames.",
+      "A repeated data variant must not create unnecessary duplicate pages.",
+      "Every core flow must have a tested entry point and exit path.",
+      "No primary interactive element may remain disconnected.",
+      "The audit must identify intentionally conditional pages."
+    ]
+  },
+  "final_quality_gates": [
+    {
+      "id": "QA-01",
+      "name": "Reference Fidelity",
+      "requirement": "All pages follow the supplied approved visual direction."
+    },
+    {
+      "id": "QA-02",
+      "name": "Single Admission Model",
+      "requirement": "Only one admission process exists. Registration waves are time-based periods, not alternative pathways."
+    },
+    {
+      "id": "QA-03",
+      "name": "Program Selection",
+      "requirement": "Exactly one primary program selection is supported."
+    },
+    {
+      "id": "QA-04",
+      "name": "Route Completeness",
+      "requirement": "Every registered route has an editable Figma frame or an explicitly documented reusable template."
+    },
+    {
+      "id": "QA-05",
+      "name": "Applicant Journey",
+      "requirement": "Registration, submission, payment when required, selection, results, and re-registration are fully represented."
+    },
+    {
+      "id": "QA-06",
+      "name": "Prototype Connectivity",
+      "requirement": "All core journeys are connected and validated."
+    },
+    {
+      "id": "QA-07",
+      "name": "Visual Quality",
+      "requirement": "No generic AI-slop patterns, repetitive layouts, fabricated content, or arbitrary decorative elements."
+    },
+    {
+      "id": "QA-08",
+      "name": "Scope Compliance",
+      "requirement": "Desktop web only, applicant role only, no admin interface, no mobile or tablet frames."
+    },
+    {
+      "id": "QA-09",
+      "name": "Figma Editability",
+      "requirement": "All major interfaces use editable native Figma frames and reusable components."
+    }
+  ],
+  "final_execution_directive": {
+    "instruction": "Create the complete PMB 2026 applicant-facing desktop website and interactive Figma prototype using the supplied design references.",
+    "non_negotiable": [
+      "ONE PRIVATE UNIVERSITY",
+      "ONE ADMISSION PROCESS",
+      "MULTIPLE REGISTRATION WAVES",
+      "ONE PRIMARY PROGRAM",
+      "ONE UNIFIED SELECTION PROCESS",
+      "APPLICANT ROLE ONLY",
+      "DESKTOP WEB ONLY",
+      "COMPLETE ROUTE COVERAGE",
+      "NO BROKEN PRIMARY PROTOTYPE CONNECTIONS",
+      "NO AI-SLOP DESIGN"
+    ],
+    "do_not": [
+      "Stop at six visual screens.",
+      "Stop at the homepage.",
+      "Stop at the dashboard.",
+      "Omit application form steps.",
+      "Omit payment alternatives.",
+      "Omit document correction states.",
+      "Omit admission result states.",
+      "Omit re-registration.",
+      "Create mobile screens.",
+      "Create admin screens.",
+      "Invent institutional facts.",
+      "Deliver a flattened image instead of native Figma frames.",
+      "Declare completion without route and prototype audits."
+    ],
+    "completion_rule": "The design is complete only when every route, page template, meaningful state, required applicant task, and core prototype connection has been accounted for and audited.",
+    "final_principle": "Complete applicant experience. Precise information architecture. Distinctive visual design. No missing pages. No broken flows. No generic AI-generated aesthetics."
+  }
+}

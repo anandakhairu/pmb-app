@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Clock, Mail, MapPin, Phone, Star, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HeroCta, UserNav } from "@/components/landing/user-nav";
 import { Logo } from "@/components/logo";
 import { Foto } from "@/components/landing/foto";
 import { KalkulatorUkt } from "@/components/landing/kalkulator-ukt";
@@ -36,14 +37,7 @@ export default function LandingPage() {
               <Link key={n.href} href={n.href} className="transition-colors hover:text-[#4B6E5A]">{n.label}</Link>
             ))}
           </nav>
-          <div className="flex items-center gap-2">
-            <Button asChild variant="ghost" className="h-10 rounded-lg px-4 text-sm font-semibold text-neutral-700 hover:bg-neutral-200/60">
-              <Link href="/login">Masuk</Link>
-            </Button>
-            <Button asChild className="h-10 rounded-lg bg-[#4B6E5A] px-5 text-sm font-semibold text-white hover:bg-[#5C836A]">
-              <Link href="/register">Daftar</Link>
-            </Button>
-          </div>
+          <UserNav />
         </div>
       </header>
 
@@ -60,14 +54,7 @@ export default function LandingPage() {
             <p className="mt-7 max-w-xl text-lg leading-relaxed text-neutral-600">
               Daftar, unggah berkas, dan pantau hasil seleksi dari satu akun. Prosesnya jelas dari awal, dan estimasi biaya kuliah bisa kamu hitung sebelum memutuskan.
             </p>
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg" className="h-12 rounded-lg bg-[#4B6E5A] px-8 text-[15px] font-semibold text-white hover:bg-[#5C836A]">
-                <Link href="/register">Daftar Sekarang</Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="h-12 rounded-lg border-[#4B6E5A]/30 bg-transparent px-8 text-[15px] font-semibold text-[#4B6E5A] hover:bg-[#4B6E5A]/5 hover:text-[#4B6E5A]">
-                <Link href="#simulasi-ukt">Simulasi UKT</Link>
-              </Button>
-            </div>
+            <HeroCta />
           </div>
 
           <div className="relative mx-auto w-full max-w-md pb-10 lg:col-span-5 lg:max-w-none">

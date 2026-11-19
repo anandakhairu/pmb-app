@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Dialog } from "radix-ui";
 import {
   FolderUp,
   GraduationCap,
+  Globe,
   House,
   LogOut,
   Menu,
@@ -65,11 +66,23 @@ function NavMenu({ perhatian, onNavigate }) {
           </Link>
         );
       })}
+
+      <div className="mt-4 pt-3 border-t border-neutral-100">
+        <Link
+          href="/"
+          onClick={onNavigate}
+          className="flex h-10 items-center gap-3 rounded-lg px-3 text-xs font-semibold text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-[#4B6E5A]"
+        >
+          <Globe className="size-4 text-neutral-400" />
+          <span>Halaman Utama Portal</span>
+        </Link>
+      </div>
     </nav>
   );
 }
 
 function ProfilPengguna({ nama, nomor }) {
+  const router = useRouter();
   return (
     <div className="border-t border-neutral-200 pt-4">
       <div className="flex items-center gap-3 px-1">
@@ -85,13 +98,30 @@ function ProfilPengguna({ nama, nomor }) {
         </div>
       </div>
       {/* TODO (Supabase Auth): ganti dengan aksi keluar, mis. supabase.auth.signOut() lalu redirect. */}
-      <Link
-        href="/login"
-        className="mt-3 flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4B6E5A]"
-      >
-        <LogOut className="size-[18px]" aria-hidden />
-        Keluar
-      </Link>
+      <div className="mt-3 flex items-center gap-2">
+        <Link
+          href="/"
+          className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-600 transition-colors hover:border-[#4B6E5A] hover:bg-neutral-50 hover:text-[#4B6E5A]"
+        >
+          <Globe className="size-3.5" />
+          <span>Ke Beranda</span>
+        </Link>
+        <button
+          onClick={() => {
+            try {
+              localStorage.removeItem("pmb_session");
+              window.dispatchEvent(new Event("pmb_session_event"));
+            } catch {}
+            document.cookie = "pmb_session=; path=/; max-age=0;";
+            router.push("/login");
+            router.refresh();
+          }}
+          className="flex h-9 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 text-xs font-semibold text-neutral-600 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+        >
+          <LogOut className="size-3.5" />
+          <span>Keluar</span>
+        </button>
+      </div>
     </div>
   );
 }
@@ -142,7 +172,10 @@ export function MahasiswaShell({ nama, nomor, perhatian, children }) {
                     <X className="size-5" aria-hidden />
                   </Dialog.Close>
                 </div>
-                <NavMenu perhatian={perhatian} onNavigate={() => setTerbuka(false)} />
+                <NavMenu
+                  perhatian={perhatian}
+                  onNavigate={() => setTerbuka(false)}
+                />
               </div>
               <ProfilPengguna nama={nama} nomor={nomor} />
             </Dialog.Content>

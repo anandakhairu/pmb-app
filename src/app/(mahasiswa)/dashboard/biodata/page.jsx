@@ -1,11 +1,19 @@
+import { Suspense } from "react";
 import { FormBiodata } from "@/components/mahasiswa/form-biodata";
 import { getDataMahasiswa } from "@/lib/data-mahasiswa";
 
 export const metadata = { title: "Biodata" };
 
-export default async function BiodataPage() {
+export default function BiodataPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-sm text-neutral-500">Memuat biodata pendaftar...</div>}>
+      <KontenBiodata />
+    </Suspense>
+  );
+}
+
+async function KontenBiodata() {
   const { mahasiswa, sekolah, formulir } = await getDataMahasiswa();
-  // Setelah formulir dikirim, biodata dikunci (status_berkas bukan DRAFT).
   const terkunci = formulir.statusBerkas !== "DRAFT" && formulir.statusBerkas !== "REVISI";
 
   return (

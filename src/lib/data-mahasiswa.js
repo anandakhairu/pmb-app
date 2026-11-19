@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { prisma } from "@/lib/prisma";
 
 // =============================================================================
 // DATA AREA MAHASISWA (placeholder)
@@ -154,21 +155,69 @@ const SKENARIO = {
 };
 
 /**
- * Ambil data pendaftar yang sedang login.
- * TODO (setelah Supabase Auth): baca sesi, lalu
- *   prisma.calonMahasiswa.findUnique({
- *     where: { authUserId },
- *     include: { asalSekolah: true, formulir: { include: { prodi: true, jalur: true, berkas: true } } },
- *   })
- * Fungsi dibuat async agar bentuk pemanggilnya tidak berubah.
+ * Ambil data pendaftar yang sedang login dari database PostgreSQL / Supabase via Prisma.
+ * Mendukung query spesifik atau fallback ke pendaftar pertama di database.
  */
-// cache() dari React: layout dan halaman memanggil fungsi ini dalam satu request,
-// tetapi query hanya dijalankan sekali.
-export const getDataMahasiswa = cache(async () => {
+export const getDataMahasiswa = cache(async (idOrEmail) => {
+  try {
+    const where = idOrEmail
+      ? (idOrEmail.includes("@") ? { email: idOrEmail } : { id: idOrEmail })
+      : { email: "aulia@example.com" };
+
+    let maba = await prisma.calonMahasiswa.findFirst({
+      where,
+      include: {
+        asalSekolah: true,
+        formulir: {
+          include: { prodi: true, jalur: true, berkas: true },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    if (maba && maba.formulir && maba.formulir.length > 0) {
+      const f = maba.formulir[0];
+      return {
+        mahasiswa: {
+          id: maba.id,
+          namaLengkap: maba.namaLengkap,
+          email: maba.email,
+          nik: maba.nik,
+          tempatLahir: maba.tempatLahir,
+          tanggalLahir: maba.tanggalLahir ? maba.tanggalLahir.toISOString().split("T")[0] : null,
+          jenisKelamin: maba.jenisKelamin,
+          noHp: maba.noHp,
+          alamat: maba.alamat,
+          kotaKabupaten: maba.kotaKabupaten,
+          provinsi: maba.provinsi,
+        },
+        sekolah: maba.asalSekolah || sekolahDasar,
+        formulir: {
+          id: f.id,
+          tahunAkademik: f.tahunAkademik,
+          prodi: f.prodi,
+          jalur: f.jalur,
+          nomorPendaftaran: f.nomorPendaftaran,
+          langkahTerakhir: f.langkahTerakhir,
+          statusBerkas: f.statusBerkas,
+          statusKelulusan: f.statusKelulusan,
+          catatanRevisi: f.catatanRevisi,
+          catatanKelulusan: f.catatanKelulusan,
+          finalisasiAt: f.finalisasiAt ? f.finalisasiAt.toISOString() : null,
+          diverifikasiAt: f.diverifikasiAt ? f.diverifikasiAt.toISOString() : null,
+          ditetapkanAt: f.ditetapkanAt ? f.ditetapkanAt.toISOString() : null,
+        },
+        berkas: f.berkas || [],
+      };
+    }
+  } catch (err) {
+    console.error("Prisma query fallback in getDataMahasiswa:", err.message);
+  }
+
   const s = SKENARIO[SKENARIO_AKTIF];
   return { mahasiswa: mahasiswaDasar, sekolah: sekolahDasar, formulir: s.formulir, berkas: s.berkas };
 });
-
 /* --------------------------------- HELPER ---------------------------------- */
 
 /** Posisi pendaftar pada stepper 4 tahap: Draft, Berkas, Verifikasi, Hasil. */

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
@@ -46,10 +46,18 @@ export function AuthShell({ children, wide = false }) {
       </aside>
 
       <main className="flex min-h-screen flex-col bg-white px-6 py-8 sm:p-12">
-        <div className="mb-10 lg:hidden">
-          <Logo />
+        <div className="flex items-center justify-between mb-8">
+          <div className="lg:hidden">
+            <Logo />
+          </div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3.5 py-2 text-xs font-semibold text-neutral-600 transition-all hover:border-[#4B6E5A] hover:bg-neutral-50 hover:text-[#4B6E5A] shadow-2xs ml-auto"
+          >
+            <ArrowLeft className="size-3.5" />
+            <span>Kembali ke Beranda</span>
+          </Link>
         </div>
-
         <div className="flex flex-1 items-center justify-center">
           <div className={cn("w-full", wide ? "max-w-xl" : "max-w-sm")}>
             {children}

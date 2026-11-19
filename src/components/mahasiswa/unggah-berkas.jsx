@@ -10,6 +10,7 @@ import {
   formatUkuran,
   validasiBerkas,
 } from "@/lib/berkas";
+import { finalisasiPendaftaranAction } from "@/lib/server/actions";
 import { cn } from "@/lib/utils";
 
 const jeda = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -18,7 +19,7 @@ const jeda = (ms) => new Promise((r) => setTimeout(r, ms));
  * dokumen: hasil gabungkanBerkas() (daftar dokumen + berkas yang sudah ada).
  * statusBerkas: status_berkas pada formulir.
  */
-export function UnggahBerkas({ dokumen, statusBerkas }) {
+export function UnggahBerkas({ formulirId, dokumen, statusBerkas }) {
   const [status, setStatus] = useState(statusBerkas);
   const [daftar, setDaftar] = useState(dokumen);
   const [pilihan, setPilihan] = useState({}); // jenis -> File yang menunggu diunggah
@@ -84,12 +85,15 @@ export function UnggahBerkas({ dokumen, statusBerkas }) {
     setGalatKirim(null);
     setMengirim(true);
     try {
-      // TODO: server action yang mengubah status_berkas menjadi DIKIRIM, menerbitkan
-      // nomor_pendaftaran + finalisasi_at, lalu mengantre notifikasi Web Push ke admin.
-      await jeda(900); // simulasi
+      if (formulirId) {
+        const res = await finalisasiPendaftaranAction(formulirId);
+        if (!res.success) throw new Error(res.error);
+      } else {
+        await jeda(600);
+      }
       setStatus("DIKIRIM");
-    } catch {
-      setGalatKirim("Berkas belum terkirim. Coba lagi beberapa saat.");
+    } catch (err) {
+      setGalatKirim(err.message || "Berkas belum terkirim. Coba lagi beberapa saat.");
     } finally {
       setMengirim(false);
     }

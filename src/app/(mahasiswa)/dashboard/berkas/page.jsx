@@ -1,9 +1,18 @@
+import { Suspense } from "react";
 import { UnggahBerkas } from "@/components/mahasiswa/unggah-berkas";
 import { gabungkanBerkas, getDataMahasiswa } from "@/lib/data-mahasiswa";
 
 export const metadata = { title: "Unggah Berkas" };
 
-export default async function BerkasPage() {
+export default function BerkasPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-sm text-neutral-500">Memuat berkas pendaftar...</div>}>
+      <KontenBerkas />
+    </Suspense>
+  );
+}
+
+async function KontenBerkas() {
   const { formulir, berkas } = await getDataMahasiswa();
 
   return (
@@ -16,7 +25,7 @@ export default async function BerkasPage() {
         </p>
       </header>
 
-      <UnggahBerkas dokumen={gabungkanBerkas(berkas, formulir.jalur.kode)} statusBerkas={formulir.statusBerkas} />
+      <UnggahBerkas formulirId={formulir.id} dokumen={gabungkanBerkas(berkas, formulir.jalur.kode)} statusBerkas={formulir.statusBerkas} />
     </div>
   );
 }

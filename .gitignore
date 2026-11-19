@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+*.zip
 
 # debug
 npm-debug.log*
@@ -45,3 +46,4 @@ next-env.d.ts
 .claude/
 .cursor/
 .devin/
+graphify-out/
