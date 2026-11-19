@@ -30,8 +30,8 @@ async function runPhase5Tests() {
   }
 
   const testEndpoint = "https://fcm.googleapis.com/fcm/send/test-token-pmb-qa-12345";
-  const testP256dh = "BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QT9AcPP313T59P2O_testkey";
-  const testAuth = "tH2testAuthKey123==";
+  const testP256dh = "BLZTxnZGbADF7ytotDJaHdXEp_TJKYhNNifb0QGLAaanUCTibPvoJL4dZf20X58lQCdQSaKTY3zby0U79gkXg24";
+  const testAuth = "o0_vTd8Rd8JRGKUlPem0OQ==";
 
   // 1. Service Worker File & Syntax Validation
   await assertTest("1. Service Worker File & Event Handlers (public/sw.js)", async () => {
@@ -40,7 +40,7 @@ async function runPhase5Tests() {
     const content = fs.readFileSync(swPath, "utf-8");
     if (!content.includes("self.addEventListener(\"push\"")) throw new Error("Missing push event listener");
     if (!content.includes("self.addEventListener(\"notificationclick\"")) throw new Error("Missing notificationclick listener");
-    if (!content.includes("targetPath.startsWith(\"/\")")) throw new Error("Missing open-redirect security validation in sw.js");
+    if (!content.includes("resolved.origin === self.location.origin")) throw new Error("Missing open-redirect security validation in sw.js");
   });
 
   // 2. VAPID Configuration & RFC 8292 Key Validation
@@ -173,11 +173,20 @@ async function runPhase5Tests() {
   // 9. Workflow Event Trigger: Student Finalization Enqueue
   await assertTest("9. Business Workflow Integration: Finalisasi Pendaftaran Enqueue", async () => {
     const { finalisasiPendaftaranAction } = await import("../src/lib/server/actions.js");
-    const form = await prisma.formulirPendaftaran.findFirst();
+    const form = await prisma.formulirPendaftaran.findFirst({
+      where: { mahasiswa: { email: "aulia@example.com" } },
+    });
     if (!form) throw new Error("No form found");
+    const prevStatus = form.statusBerkas;
 
     const res = await finalisasiPendaftaranAction(form.id);
     if (!res.success) throw new Error("finalisasiPendaftaranAction failed: " + res.error);
+
+    // Revert status back to baseline to prevent breaking subsequent E2E assertions
+    await prisma.formulirPendaftaran.update({
+      where: { id: form.id },
+      data: { statusBerkas: prevStatus },
+    });
   });
 
   // 10. Clean Up QA Transient Test Records

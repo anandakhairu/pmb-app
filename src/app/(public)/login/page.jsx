@@ -41,17 +41,57 @@ export default function LoginPage() {
     setEmailVal(email);
     setPasswordVal(password);
     setErrors({});
+    setFormError(null);
+  }
+
+  async function masukCepat(email, password) {
+    setEmailVal(email);
+    setPasswordVal(password);
+    setErrors({});
+    setFormError(null);
+    setLoading(true);
+
+    let target = null;
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const emailLower = email.toLowerCase();
+      const isAdmin = emailLower.includes("admin") || emailLower.includes("panitia");
+      const userPayload = {
+        email,
+        nama: isAdmin
+          ? "Budi Santoso, M.Kom."
+          : emailLower.includes("aulia")
+          ? "Aulia Rahmawati"
+          : email.split("@")[0],
+        role: isAdmin ? "ADMIN" : "PENDAFTAR",
+      };
+
+      // Simpan di localStorage dan cookie untuk sinkronisasi instan
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("pmb_session", JSON.stringify(userPayload));
+          window.dispatchEvent(new Event("pmb_session_event"));
+        } catch {}
+      }
+      document.cookie = `pmb_session=${encodeURIComponent(JSON.stringify(userPayload))}; path=/; max-age=604800; SameSite=Lax`;
+      target = isAdmin ? "/admin" : "/dashboard";
+    } finally {
+      setLoading(false);
+    }
+
+    if (target) {
+      router.push(target);
+    }
   }
 
   async function onSubmit(e) {
     e.preventDefault();
     setFormError(null);
 
-    const data = new FormData(e.currentTarget);
-    const parsed = loginSchema.safeParse({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    const email = emailVal || new FormData(e.currentTarget).get("email") || "";
+    const password = passwordVal || new FormData(e.currentTarget).get("password") || "";
+
+    const parsed = loginSchema.safeParse({ email, password });
 
     if (!parsed.success) {
       const next = {};
@@ -64,24 +104,40 @@ export default function LoginPage() {
     }
 
     setErrors({});
+    setFormError(null);
     setLoading(true);
 
+    let target = null;
     try {
-      // TODO (langkah Supabase Auth):
-      // const { error } = await supabase.auth.signInWithPassword({
-      //   email: parsed.data.email,
-      //   password: parsed.data.password,
-      // });
-      // if (error) throw error;
-      // `remember` menentukan apakah sesi disimpan persisten.
-      await new Promise((resolve) => setTimeout(resolve, 700)); // simulasi
-
+      await new Promise((resolve) => setTimeout(resolve, 350));
       const emailLower = parsed.data.email.toLowerCase();
       const isAdmin = emailLower.includes("admin") || emailLower.includes("panitia");
-      router.push(isAdmin ? "/admin" : "/dashboard");
-      setFormError("Email atau kata sandi tidak cocok. Periksa lalu coba lagi.");
+      const userPayload = {
+        email: parsed.data.email,
+        nama: isAdmin
+          ? "Budi Santoso, M.Kom."
+          : emailLower.includes("aulia")
+          ? "Aulia Rahmawati"
+          : parsed.data.email.split("@")[0],
+        role: isAdmin ? "ADMIN" : "PENDAFTAR",
+      };
+
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("pmb_session", JSON.stringify(userPayload));
+          window.dispatchEvent(new Event("pmb_session_event"));
+        } catch {}
+      }
+      document.cookie = `pmb_session=${encodeURIComponent(JSON.stringify(userPayload))}; path=/; max-age=604800; SameSite=Lax`;
+      target = isAdmin ? "/admin" : "/dashboard";
+    } catch {
+      setFormError("Gagal memproses login. Silakan periksa kembali.");
     } finally {
       setLoading(false);
+    }
+
+    if (target) {
+      router.push(target);
     }
   }
 
@@ -113,23 +169,28 @@ export default function LoginPage() {
         <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
           <button
             type="button"
-            onClick={() => pasangKredensial("aulia@example.com", "Pendaftar2027!")}
-            className="rounded-xl border border-neutral-200 bg-white p-2.5 text-left transition-all hover:border-[#4B6E5A] hover:bg-neutral-50 focus-visible:outline-[#4B6E5A]"
+            onClick={() => masukCepat("aulia@example.com", "Pendaftar2027!")}
+            className="group rounded-xl border border-neutral-200 bg-white p-2.5 text-left transition-all hover:border-[#4B6E5A] hover:bg-[#4B6E5A]/5 focus-visible:outline-[#4B6E5A]"
           >
-            <p className="font-bold text-neutral-900">🎓 Calon Pendaftar</p>
+            <div className="flex items-center justify-between">
+              <p className="font-bold text-neutral-900 group-hover:text-[#4B6E5A]">🎓 Calon Pendaftar</p>
+              <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">1-Klik Masuk</span>
+            </div>
             <p className="text-[11px] text-neutral-500 font-mono mt-0.5">aulia@example.com</p>
           </button>
           <button
             type="button"
-            onClick={() => pasangKredensial("panitia.pmb@universitas.ac.id", "Panitia2027!")}
-            className="rounded-xl border border-neutral-200 bg-white p-2.5 text-left transition-all hover:border-[#4B6E5A] hover:bg-neutral-50 focus-visible:outline-[#4B6E5A]"
+            onClick={() => masukCepat("panitia.pmb@universitas.ac.id", "Panitia2027!")}
+            className="group rounded-xl border border-neutral-200 bg-white p-2.5 text-left transition-all hover:border-[#4B6E5A] hover:bg-[#4B6E5A]/5 focus-visible:outline-[#4B6E5A]"
           >
-            <p className="font-bold text-neutral-900">🛡️ Admin Panitia</p>
+            <div className="flex items-center justify-between">
+              <p className="font-bold text-neutral-900 group-hover:text-[#4B6E5A]">🛡️ Admin Panitia</p>
+              <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">1-Klik Masuk</span>
+            </div>
             <p className="text-[11px] text-neutral-500 font-mono mt-0.5">panitia.pmb@...</p>
           </button>
         </div>
       </div>
-
       <form onSubmit={onSubmit} noValidate className="mt-10 space-y-6">
         {formError && (
           <p

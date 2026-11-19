@@ -37,23 +37,30 @@ export function NotifikasiWebPushPrompt({
   const [pesan, setPesan] = useState(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window) {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      return;
+    }
+
+    let active = true;
+    navigator.serviceWorker.ready.then(async (reg) => {
+      if (!active) return;
       setDidukung(true);
       setIzin(Notification.permission);
 
-      // Cek apakah service worker sudah punya subscription aktif
-      navigator.serviceWorker.ready.then(async (reg) => {
-        try {
-          const sub = await reg.pushManager.getSubscription();
-          if (sub) {
-            const status = await cekStatusPerangkatAction(sub.endpoint);
-            setTerdaftar(status.terdaftar);
-          }
-        } catch {
-          // ignore
+      try {
+        const sub = await reg.pushManager.getSubscription();
+        if (sub && active) {
+          const status = await cekStatusPerangkatAction(sub.endpoint);
+          if (active) setTerdaftar(status.terdaftar);
         }
-      });
-    }
+      } catch {
+        // ignore
+      }
+    });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   async function aktifkanNotifikasi() {

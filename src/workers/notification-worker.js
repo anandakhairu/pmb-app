@@ -5,6 +5,8 @@ const webpush = require("web-push");
 import { prisma } from "../lib/prisma.js";
 import { createRedisConnection } from "../lib/queue/redis.js";
 import { QUEUE_NAME } from "../lib/queue/notifications.js";
+import { jalankanOutboxDispatcher } from "../lib/server/outbox-dispatcher.js";
+import { isValidPushEndpoint } from "../lib/server/ssrf-validator.js";
 
 // =============================================================================
 // STANDALONE PMB BACKGROUND WORKER — WEB PUSH NOTIFICATION PROCESS
@@ -65,6 +67,12 @@ const worker = new Worker(
     let expiredCount = 0;
 
     for (const perangkat of perangkatList) {
+      // Pre-send defense-in-depth: validasi endpoint push sebelum membuat koneksi outbound
+      if (!isValidPushEndpoint(perangkat.endpoint)) {
+        console.warn(`   ⚠️ [Worker SSRF Guard] Endpoint ${perangkat.endpoint.slice(0, 35)}... ditolak (bukan W3C push provider).`);
+        continue;
+      }
+
       const pushSubscription = {
         endpoint: perangkat.endpoint,
         keys: {
@@ -85,7 +93,7 @@ const worker = new Worker(
       } catch (err) {
         console.error(`   ❌ [Push Failed] Status: ${err.statusCode || "ERR"}, Message: ${err.message}`);
 
-        // Jika endpoint sudah kedaluwarsa atau di-uninstall (HTTP 404 / 410 Gone)
+        // Permanent Failure: Endpoint expired / uninstalled (HTTP 404 / 410 Gone)
         if (err.statusCode === 404 || err.statusCode === 410) {
           console.log(`   🧹 [Deactivating] Endpoint expired (HTTP ${err.statusCode}). Disabling record.`);
           await prisma.perangkatNotifikasi.update({
@@ -93,6 +101,9 @@ const worker = new Worker(
             data: { aktif: false },
           });
           expiredCount++;
+        } else {
+          // Transient error: Re-throw to trigger BullMQ exponential backoff retry
+          throw err;
         }
       }
     }
@@ -118,9 +129,37 @@ worker.on("failed", (job, err) => {
   console.error(`💥 [Worker] Job #${job.id} failed with error:`, err.message);
 });
 
+worker.on("error", (err) => {
+  console.error("⚠️ [Worker Connection Error]:", err.message);
+});
+
+// =============================================================================
+// PERIODIC OUTBOX RECONCILER LOOP (Every 15 seconds)
+// Menjamin bahwa event outbox yang tertunda (akibat Redis mati / gangguan jaringan)
+// otomatis diproses ulang tanpa bergantung pada interaksi pengguna berikutnya.
+// =============================================================================
+const RECONCILE_INTERVAL_MS = 15000;
+const outboxReconcilerTimer = setInterval(async () => {
+  try {
+    const sweep = await jalankanOutboxDispatcher(15);
+    if (sweep.diproses > 0) {
+      console.log(`[Worker Reconciler] Swept and processed ${sweep.diproses} outbox events (${sweep.sukses} enqueued, ${sweep.gagal} pending retry).`);
+    }
+  } catch (err) {
+    console.warn("[Worker Reconciler Notice]:", err.message);
+  }
+}, RECONCILE_INTERVAL_MS);
+
 // Graceful shutdown handling
 async function shutdown() {
   console.log("\n🛑 [Worker] Shutting down worker gracefully...");
+  // 10s watchdog: mencegah worker hang permanen jika ada socket koneksi luar yang macet
+  setTimeout(() => {
+    console.error("⚠️ [Worker Watchdog] Forced exit setelah timeout 10 detik.");
+    process.exit(1);
+  }, 10000).unref();
+
+  clearInterval(outboxReconcilerTimer);
   await worker.close();
   await connection.quit();
   await prisma.$disconnect();

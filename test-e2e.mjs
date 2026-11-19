@@ -136,6 +136,15 @@ const routes = [
       { text: "Validasi 3 Lapisan", desc: "Status Validasi 3 Lapisan" },
     ],
   },
+  {
+    path: "/admin/chat",
+    name: "Admin Chat ADMITRA (Full Page)",
+    checks: [
+      { text: "Chat ADMITRA", desc: "Heading Halaman Chat ADMITRA" },
+      { text: "Pusat Informasi dan Konsultasi ADMITRA", desc: "Title Header Chat Canvas" },
+      { text: "Pertanyaan Populer", desc: "Chips Pertanyaan Populer" },
+    ],
+  },
 ];
 
 async function runTests() {

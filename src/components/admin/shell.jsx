@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Dialog } from "radix-ui";
 import {
@@ -10,14 +11,36 @@ import {
   FileCheck2,
   LogOut,
   Menu,
+  MessageSquareText,
   Sliders,
   Sparkles,
   Users,
   X,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+
+function AdminLogo({ className = "" }) {
+  return (
+    <Link
+      href="/admin"
+      aria-label="Dashboard Admin"
+      className={`flex items-center gap-2.5 ${className}`}
+    >
+      <Image
+        src="/admitra-mark.png"
+        alt="Logo"
+        width={360}
+        height={242}
+        priority
+        className="h-8 w-auto"
+      />
+      <span className="text-[17px] font-extrabold tracking-[0.14em] text-[#222B35]">
+        DASHBOARD
+      </span>
+    </Link>
+  );
+}
 
 const MENU_ADMIN = [
   {
@@ -41,6 +64,11 @@ const MENU_ADMIN = [
     href: "/admin/pengaturan",
     label: "Pengaturan & Web Push",
     ikon: Sliders,
+  },
+  {
+    href: "/admin/chat",
+    label: "Chat ADMITRA",
+    ikon: MessageSquareText,
   },
 ];
 
@@ -94,6 +122,7 @@ function NavMenu({ onNavigate }) {
 }
 
 function ProfilAdmin({ admin }) {
+  const router = useRouter();
   return (
     <div className="rounded-xl border border-neutral-200/80 bg-neutral-50/70 p-3.5">
       <div className="flex items-center gap-3">
@@ -114,13 +143,27 @@ function ProfilAdmin({ admin }) {
         </div>
       </div>
       <div className="mt-3 flex items-center justify-between border-t border-neutral-200/70 pt-2.5 text-xs text-neutral-500">
-        <span>NIP: {admin.nip.slice(0, 10)}...</span>
         <Link
-          href="/login"
+          href="/"
+          className="flex items-center gap-1 font-semibold text-neutral-600 hover:text-[#4B6E5A]"
+        >
+          <Sparkles className="size-3.5" /> Ke Beranda
+        </Link>
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              localStorage.removeItem("pmb_session");
+              window.dispatchEvent(new Event("pmb_session_event"));
+            } catch {}
+            document.cookie = "pmb_session=; path=/; max-age=0;";
+            router.push("/login");
+            router.refresh();
+          }}
           className="flex items-center gap-1 font-semibold text-neutral-600 hover:text-rose-600"
         >
           <LogOut className="size-3.5" /> Keluar
-        </Link>
+        </button>
       </div>
     </div>
   );
@@ -134,10 +177,7 @@ export function AdminShell({ admin, children }) {
       {/* ----------------------------- SIDEBAR DESKTOP ----------------------------- */}
       <aside className="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-neutral-200/80 bg-white px-5 py-6 lg:flex">
         <div className="flex items-center justify-between px-1">
-          <Logo />
-          <Badge variant="outline" className="border-[#4B6E5A]/30 bg-[#4B6E5A]/10 text-[10px] font-extrabold text-[#2F4A3B]">
-            BACK-OFFICE
-          </Badge>
+          <AdminLogo />
         </div>
 
         <div className="mt-8 flex-1 overflow-y-auto pr-1">
@@ -178,7 +218,7 @@ export function AdminShell({ admin, children }) {
       <div className="flex min-w-0 flex-1 flex-col">
         {/* TOPBAR MOBILE */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-neutral-200/80 bg-white/95 px-4 backdrop-blur lg:hidden">
-          <Logo />
+          <AdminLogo />
           <button
             type="button"
             onClick={() => setMobileTerbuka(true)}
@@ -195,7 +235,7 @@ export function AdminShell({ admin, children }) {
             <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs animate-in fade-in" />
             <Dialog.Content className="fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white p-5 shadow-2xl animate-in slide-in-from-left">
               <div className="flex items-center justify-between">
-                <Logo />
+                <AdminLogo />
                 <Dialog.Close asChild>
                   <button
                     type="button"
@@ -209,6 +249,16 @@ export function AdminShell({ admin, children }) {
 
               <div className="mt-6 flex-1 overflow-y-auto">
                 <NavMenu onNavigate={() => setMobileTerbuka(false)} />
+                <div className="mt-6 border-t border-neutral-100 pt-4">
+                  <Link
+                    href="/"
+                    onClick={() => setMobileTerbuka(false)}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
+                  >
+                    <Sparkles className="size-3.5 text-neutral-400" />
+                    <span>Halaman Publik Portal</span>
+                  </Link>
+                </div>
               </div>
 
               <div className="pt-4">

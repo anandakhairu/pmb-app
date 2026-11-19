@@ -2,7 +2,8 @@
 
 import { z } from "zod";
 import { prisma } from "../prisma.js";
-import { enqueueNotificationJob } from "../queue/notifications.js";
+import { simpanOutboxNotifikasi } from "./outbox.js";
+import { jalankanOutboxDispatcher } from "./outbox-dispatcher.js";
 
 // Safe wrapper untuk revalidatePath yang bekerja di Next.js maupun runner standalone test
 async function safeRevalidate(path) {
@@ -57,7 +58,16 @@ export async function simpanVerifikasiBerkasAction(payload) {
         select: { id: true, nama: true },
       });
 
-      // 2. Update status formulir pendaftaran
+      // 2. State Machine: Hanya formulir yang sudah dikirim yang dapat diverifikasi admin
+      const existingForm = await tx.formulirPendaftaran.findUnique({
+        where: { id: formulirId },
+      });
+      if (!existingForm) throw new Error("Formulir pendaftaran tidak ditemukan");
+      if (existingForm.statusBerkas === "DRAFT") {
+        throw new Error("Formulir masih berstatus DRAFT dan belum difinalisasi oleh pendaftar.");
+      }
+
+      // 3. Update status formulir pendaftaran
       const formulirUpdate = await tx.formulirPendaftaran.update({
         where: { id: formulirId },
         data: {
@@ -81,26 +91,26 @@ export async function simpanVerifikasiBerkasAction(payload) {
         }
       }
 
-      // 4. Enqueue BullMQ notification job
+      // 4. Persist intent notifikasi secara atomik ke Transactional Outbox (PostgreSQL)
       if (kirimNotifikasi && formulirUpdate.mahasiswaId) {
         const pesanBody =
           statusBerkas === "TERVERIFIKASI"
             ? "Selamat! Berkas pendaftaran Anda telah dinyatakan VALID oleh panitia."
             : "Ada berkas yang memerlukan revisi. Silakan periksa catatan perbaikan di portal.";
 
-        await enqueueNotificationJob({
+        await simpanOutboxNotifikasi(tx, {
           targetId: formulirUpdate.mahasiswaId,
           targetType: "MAHASISWA",
-          title: statusBerkas === "TERVERIFIKASI" ? "Berkas Terverifikasi" : "Perlu Revisi Berkas",
-          body: pesanBody,
+          judul: statusBerkas === "TERVERIFIKASI" ? "Berkas Terverifikasi" : "Perlu Revisi Berkas",
+          pesan: pesanBody,
           url: "/dashboard/berkas",
           tag: `pmb-verifikasi-${formulirId}`,
-          deduplicationId: `${formulirId}-${statusBerkas}`,
+          idempotencyKey: `verif-${formulirId}-${statusBerkas}`,
         });
       }
 
       return formulirUpdate;
-    });
+    }, { maxWait: 15000, timeout: 20000 });
 
     // Revalidate rute terkait
     await safeRevalidate("/admin");
@@ -108,6 +118,11 @@ export async function simpanVerifikasiBerkasAction(payload) {
     await safeRevalidate(`/admin/verifikasi/${formulirId}`);
     await safeRevalidate("/dashboard");
     await safeRevalidate("/dashboard/berkas");
+
+    // 5. Trigger outbox dispatcher di luar transaksi database (non-blocking)
+    jalankanOutboxDispatcher(10).catch((err) => {
+      console.warn("[Outbox] Dispatcher sweep deferred:", err.message);
+    });
 
     return {
       success: true,
@@ -161,7 +176,17 @@ export async function simpanBiodataAction(formData) {
 
   try {
     await prisma.$transaction(async (tx) => {
-      // 1. Update profil mahasiswa
+      // 1. Verifikasi data calon mahasiswa dan kunci status
+      const maba = await tx.calonMahasiswa.findUnique({
+        where: { id: data.mahasiswaId },
+        include: { formulir: true },
+      });
+      if (!maba) throw new Error("Data calon mahasiswa tidak ditemukan");
+      if (maba.formulir?.[0]?.statusBerkas === "TERVERIFIKASI") {
+        throw new Error("Biodata tidak dapat diubah karena formulir sudah terverifikasi.");
+      }
+
+      // 2. Update profil mahasiswa
       await tx.calonMahasiswa.update({
         where: { id: data.mahasiswaId },
         data: {
@@ -198,7 +223,7 @@ export async function simpanBiodataAction(formData) {
           nilaiRataRata: data.nilaiRataRata,
         },
       });
-    });
+    }, { maxWait: 15000, timeout: 20000 });
 
     await safeRevalidate("/dashboard/biodata");
     await safeRevalidate("/dashboard");
@@ -225,20 +250,18 @@ export async function finalisasiPendaftaranAction(formulirId) {
       });
 
       if (!formulir) throw new Error("Formulir tidak ditemukan");
+      if (formulir.statusBerkas !== "DRAFT" && formulir.statusBerkas !== "REVISI") {
+        throw new Error(`Pendaftaran tidak dapat difinalisasi karena status saat ini: ${formulir.statusBerkas}`);
+      }
 
       let nomor = formulir.nomorPendaftaran;
       if (!nomor) {
-        try {
-          const seqRes = await tx.$queryRaw`SELECT nextval('seq_nomor_pendaftaran') as seq`;
-          const nextNum = Number(seqRes[0]?.seq || 1n);
-          nomor = `PMB-2027-${String(nextNum).padStart(6, "0")}`;
-        } catch {
-          const count = await tx.formulirPendaftaran.count();
-          nomor = `PMB-2027-${String(count + 1).padStart(6, "0")}`;
-        }
+        const seqRes = await tx.$queryRaw`SELECT nextval('seq_nomor_pendaftaran') as seq`;
+        const nextNum = Number(seqRes[0]?.seq || 1n);
+        nomor = `PMB-2027-${String(nextNum).padStart(6, "0")}`;
       }
 
-      return await tx.formulirPendaftaran.update({
+      const updatedForm = await tx.formulirPendaftaran.update({
         where: { id: formulirId },
         data: {
           nomorPendaftaran: nomor,
@@ -247,28 +270,87 @@ export async function finalisasiPendaftaranAction(formulirId) {
           langkahTerakhir: 4,
         },
       });
-    });
+
+      // Persist intent notifikasi secara atomik ke Outbox
+      if (updatedForm.mahasiswaId) {
+        await simpanOutboxNotifikasi(tx, {
+          targetId: updatedForm.mahasiswaId,
+          targetType: "MAHASISWA",
+          judul: "Pendaftaran Berhasil Dikirim",
+          pesan: `Formulir ${updatedForm.nomorPendaftaran} telah diterima panitia dan sedang antre verifikasi.`,
+          url: "/dashboard",
+          tag: `pmb-finalisasi-${formulirId}`,
+          idempotencyKey: `finalisasi-${formulirId}`,
+        });
+      }
+
+      return updatedForm;
+    }, { maxWait: 15000, timeout: 20000 });
 
     await safeRevalidate("/dashboard/berkas");
     await safeRevalidate("/dashboard");
     await safeRevalidate("/admin/verifikasi");
-    if (hasil.mahasiswaId) {
-      await enqueueNotificationJob({
-        targetId: hasil.mahasiswaId,
-        targetType: "MAHASISWA",
-        title: "Pendaftaran Berhasil Dikirim",
-        body: `Formulir ${hasil.nomorPendaftaran} telah diterima panitia dan sedang antre verifikasi.`,
-        url: "/dashboard",
-        tag: `pmb-finalisasi-${formulirId}`,
-        deduplicationId: `${formulirId}-finalisasi`,
-      });
-    }
+    // Trigger outbox dispatcher di luar transaksi database (non-blocking)
+    jalankanOutboxDispatcher(10).catch((err) => {
+      console.warn("[Outbox] Dispatcher sweep deferred:", err.message);
+    });
     return { success: true, nomorPendaftaran: hasil.nomorPendaftaran };
   } catch (error) {
     console.error("Gagal finalisasi pendaftaran:", error);
     return {
       success: false,
       error: "Gagal memfinalisasi berkas pendaftaran. Silakan coba kembali.",
+    };
+  }
+}
+
+const toggleJalurSchema = z.object({
+  kodeJalur: z.string().min(1, "Kode jalur wajib diisi"),
+  aktif: z.boolean(),
+  biayaPendaftaran: z.number().nonnegative().optional(),
+});
+
+/**
+ * Server Action: Admin membuka atau menutup jalur pendaftaran (misal: Seleksi Mandiri)
+ */
+export async function toggleJalurPendaftaranAction(payload) {
+  const parsed = toggleJalurSchema.safeParse(payload);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message || "Payload tidak valid",
+    };
+  }
+
+  const { kodeJalur, aktif, biayaPendaftaran } = parsed.data;
+
+  try {
+    const updated = await prisma.jalurPendaftaran.update({
+      where: { kode: kodeJalur },
+      data: {
+        aktif,
+        ...(biayaPendaftaran !== undefined ? { biayaPendaftaran } : {}),
+      },
+    });
+
+    await safeRevalidate("/admin/master-data");
+    await safeRevalidate("/");
+    await safeRevalidate("/dashboard");
+
+    return {
+      success: true,
+      data: {
+        kode: updated.kode,
+        nama: updated.nama,
+        aktif: updated.aktif,
+        biaya: Number(updated.biayaPendaftaran),
+      },
+    };
+  } catch (error) {
+    console.error("Gagal mengubah status jalur pendaftaran:", error);
+    return {
+      success: false,
+      error: "Gagal memperbarui status pendaftaran jalur: " + error.message,
     };
   }
 }

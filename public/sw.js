@@ -62,21 +62,35 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  // Validasi URL: Hanya izinkan path internal aplikasi (mencegah open redirect)
-  let targetPath = event.notification.data?.url || "/dashboard";
-  if (!targetPath.startsWith("/")) {
-    targetPath = "/dashboard";
+  // Validasi URL: Hanya izinkan path internal aplikasi (mencegah open redirect dan protocol-relative bypass)
+  let targetUrl;
+  try {
+    const rawPath = event.notification.data?.url || "/dashboard";
+    if (
+      typeof rawPath !== "string" ||
+      !rawPath.startsWith("/") ||
+      rawPath.startsWith("//") ||
+      rawPath.includes("\\")
+    ) {
+      targetUrl = new URL("/dashboard", self.location.origin).href;
+    } else {
+      const resolved = new URL(rawPath, self.location.origin);
+      if (resolved.origin === self.location.origin) {
+        targetUrl = resolved.href;
+      } else {
+        targetUrl = new URL("/dashboard", self.location.origin).href;
+      }
+    }
+  } catch {
+    targetUrl = new URL("/dashboard", self.location.origin).href;
   }
-
-  const targetUrl = new URL(targetPath, self.location.origin).href;
-
   event.waitUntil(
     self.clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
         // Jika ada tab yang sudah membuka aplikasi, fokuskan tab tersebut
         for (const client of clientList) {
-          if (client.url.startsWith(self.location.origin) && "focus" in client) {
+          if (client.url.startsWith(self.location.origin + "/") && "focus" in client) {
             client.navigate(targetUrl);
             return client.focus();
           }

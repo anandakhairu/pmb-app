@@ -1,13 +1,19 @@
-import { Layers, Plus, School } from "lucide-react";
+import { Plus, School } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MASTER_JALUR, MASTER_PRODI } from "@/lib/data-admin";
-
+import { JalurManager } from "@/components/admin/jalur-manager";
 export const metadata = {
   title: "Master Data PMB",
 };
 
 export default function MasterDataPage() {
+  const daftarJalur = MASTER_JALUR.map((j) => ({
+    kode: j.kode,
+    nama: j.nama,
+    biaya: j.biaya,
+    aktif: j.status === "BUKA",
+  }));
   return (
     <div className="space-y-8">
       <div>
@@ -81,48 +87,7 @@ export default function MasterDataPage() {
       </div>
 
       {/* SEKSI 2: JALUR PENDAFTARAN */}
-      <div className="rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-xs">
-        <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
-              <Layers className="size-4.5" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-neutral-900">Jalur Pendaftaran & Tarif Biaya</h2>
-              <p className="text-xs text-neutral-500">Konfigurasi jalur SNBP, SNBT, dan Seleksi Mandiri</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="text-xs font-bold uppercase tracking-wider text-neutral-400 border-b border-neutral-200/80">
-              <tr>
-                <th className="py-3 px-3">Kode Jalur</th>
-                <th className="py-3 px-3">Nama Jalur Seleksi</th>
-                <th className="py-3 px-3">Biaya Formulir</th>
-                <th className="py-3 px-3 text-right">Status Pendaftaran</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100 text-neutral-700">
-              {MASTER_JALUR.map((jalur) => (
-                <tr key={jalur.kode} className="hover:bg-neutral-50/70">
-                  <td className="py-3.5 px-3 font-mono font-bold text-neutral-800">{jalur.kode}</td>
-                  <td className="py-3.5 px-3 font-semibold text-neutral-900">{jalur.nama}</td>
-                  <td className="py-3.5 px-3 font-mono text-neutral-700">
-                    {jalur.biaya === 0 ? "Gratis" : `Rp ${jalur.biaya.toLocaleString("id-ID")}`}
-                  </td>
-                  <td className="py-3.5 px-3 text-right">
-                    <Badge variant={jalur.status === "BUKA" ? "success" : "secondary"} className="text-xs font-bold">
-                      {jalur.status === "BUKA" ? "Pendaftaran Buka" : "Ditutup"}
-                    </Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <JalurManager initialJalur={daftarJalur} />
     </div>
   );
 }
