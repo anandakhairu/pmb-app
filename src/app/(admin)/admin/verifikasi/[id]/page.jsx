@@ -1,12 +1,16 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { SplitViewVerifikasi } from "@/components/admin/split-view-verifikasi";
-import { DAFTAR_PENDAFTAR_MOCK, getDetailPendaftarAdmin } from "@/lib/data-admin";
+import { getDetailPendaftarAdmin } from "@/lib/data-admin";
+import { prisma } from "@/lib/prisma";
 
-export function generateStaticParams() {
-  return DAFTAR_PENDAFTAR_MOCK.map((p) => ({
-    id: p.id,
-  }));
+export async function generateStaticParams() {
+  try {
+    const pendaftars = await prisma.formulirPendaftaran.findMany({ select: { id: true } });
+    return pendaftars.map((p) => ({ id: p.id }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }) {
@@ -15,7 +19,7 @@ export async function generateMetadata({ params }) {
   if (!pendaftar) return { title: "Verifikasi Berkas" };
 
   return {
-    title: `Verifikasi ${pendaftar.mahasiswa.namaLengkap} (${pendaftar.nomorPendaftaran})`,
+    title: `Verifikasi ${pendaftar.mahasiswa?.namaLengkap || "Pendaftar"} (${pendaftar.nomorPendaftaran || "-"})`,
   };
 }
 

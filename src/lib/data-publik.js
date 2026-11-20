@@ -1,9 +1,11 @@
 // =============================================================================
-// DATA HALAMAN PUBLIK (placeholder)
-// Bentuk datanya meniru kolom database (program_studi, jalur_pendaftaran,
-// pengumuman). Saat database siap, ganti isi file ini dengan query Prisma
-// tanpa mengubah komponen tampilan.
+// DATA HALAMAN PUBLIK
+// Menyediakan data program studi, jalur pendaftaran, pengumuman, dan statistik
+// yang terhubung langsung ke database PostgreSQL via Prisma dengan fallback statis.
 // =============================================================================
+
+import { cache } from "react";
+import { prisma } from "@/lib/prisma";
 
 /* ------------------------------- FOTO ------------------------------------- */
 // Letakkan file foto di folder public/images/ dengan nama di bawah ini.
@@ -135,3 +137,116 @@ export const KONTAK = [
   "pmb@admitra.ac.id",
   "Senin sampai Jumat, 08.00 sampai 15.00 WIB",
 ];
+
+/* --------------------------- GETTER DATABASE (PRISMA) --------------------- */
+
+/**
+ * Mengambil daftar program studi langsung dari database PostgreSQL.
+ */
+export const getProdiPublik = cache(async () => {
+  try {
+    const list = await prisma.programStudi.findMany({
+      where: { aktif: true },
+      orderBy: [{ fakultas: "asc" }, { nama: "asc" }],
+    });
+    if (list.length > 0) {
+      return list.map((p) => ({
+        id: p.id,
+        value: slug(p.nama),
+        kode: p.kode,
+        nama: p.nama,
+        fakultas: p.fakultas,
+        jenjang: p.jenjang,
+        akreditasi: p.akreditasi,
+        kuota: p.kuota,
+        ukt: Array.isArray(p.tarifUkt)
+          ? p.tarifUkt.map((t) => Number(t.biaya))
+          : TARIF_RUMPUN.teknik,
+      }));
+    }
+  } catch (err) {
+    console.error("Prisma error in getProdiPublik:", err.message);
+  }
+  return PRODI;
+});
+
+/**
+ * Mengambil daftar jalur pendaftaran aktif langsung dari database PostgreSQL.
+ */
+export const getJalurPublik = cache(async () => {
+  try {
+    const list = await prisma.jalurPendaftaran.findMany({
+      where: { aktif: true },
+      orderBy: { kode: "asc" },
+    });
+    if (list.length > 0) {
+      return list.map((j) => ({
+        id: j.kode.toLowerCase(),
+        kode: j.kode,
+        nama: j.nama,
+        deskripsi: j.deskripsi,
+        biaya: Number(j.biayaPendaftaran),
+        persyaratan: j.persyaratan || [],
+        butuhUjianCbt: j.butuhUjianCbt,
+        tanggalBuka: j.tanggalBuka ? j.tanggalBuka.toISOString() : null,
+        tanggalTutup: j.tanggalTutup ? j.tanggalTutup.toISOString() : null,
+      }));
+    }
+  } catch (err) {
+    console.error("Prisma error in getJalurPublik:", err.message);
+  }
+  return JALUR;
+});
+
+/**
+ * Mengambil pengumuman resmi yang dipublikasikan langsung dari database PostgreSQL.
+ */
+export const getPengumumanPublik = cache(async () => {
+  try {
+    const list = await prisma.pengumuman.findMany({
+      where: { dipublikasikan: true },
+      orderBy: { publishedAt: "desc" },
+    });
+    if (list.length > 0) {
+      return list.map((p) => ({
+        id: p.id,
+        slug: p.slug,
+        judul: p.judul,
+        ringkasan: p.ringkasan,
+        isi: p.isi,
+        tanggal: p.publishedAt
+          ? p.publishedAt.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
+          : "",
+      }));
+    }
+  } catch (err) {
+    console.error("Prisma error in getPengumumanPublik:", err.message);
+  }
+  return PENGUMUMAN;
+});
+
+/**
+ * Mengambil statistik ringkas dari database PostgreSQL.
+ */
+export const getStatistikPublik = cache(async () => {
+  try {
+    const [totalFakultas, totalProdi] = await Promise.all([
+      prisma.programStudi.findMany({
+        where: { aktif: true },
+        select: { fakultas: true },
+        distinct: ["fakultas"],
+      }),
+      prisma.programStudi.count({ where: { aktif: true } }),
+    ]);
+
+    return [
+      { nilai: String(totalFakultas.length || FAKULTAS_LIST.length), label: "Fakultas" },
+      { nilai: String(totalProdi || PRODI.length), label: "Program Studi" },
+      { nilai: "85%", label: "Serapan Lulusan" },
+      { nilai: "Tersedia", label: "KIP-Kuliah" },
+    ];
+  } catch (err) {
+    console.error("Prisma error in getStatistikPublik:", err.message);
+    return STATISTIK;
+  }
+});

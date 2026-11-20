@@ -1,19 +1,26 @@
 import { Plus, School } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MASTER_JALUR, MASTER_PRODI } from "@/lib/data-admin";
+import { getMasterJalurAdmin, getMasterProdiAdmin } from "@/lib/data-admin";
 import { JalurManager } from "@/components/admin/jalur-manager";
+
 export const metadata = {
   title: "Master Data PMB",
 };
 
-export default function MasterDataPage() {
-  const daftarJalur = MASTER_JALUR.map((j) => ({
+export default async function MasterDataPage() {
+  const [prodis, jalurs] = await Promise.all([
+    getMasterProdiAdmin(),
+    getMasterJalurAdmin(),
+  ]);
+
+  const daftarJalur = jalurs.map((j) => ({
     kode: j.kode,
     nama: j.nama,
     biaya: j.biaya,
-    aktif: j.status === "BUKA",
+    aktif: j.aktif,
   }));
+
   return (
     <div className="space-y-8">
       <div>
@@ -56,8 +63,8 @@ export default function MasterDataPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 text-neutral-700">
-              {MASTER_PRODI.map((prodi) => {
-                const persen = Math.round((prodi.terisi / prodi.kuota) * 100);
+              {prodis.map((prodi) => {
+                const persen = prodi.kuota > 0 ? Math.round((prodi.terisi / prodi.kuota) * 100) : 0;
                 return (
                   <tr key={prodi.kode} className="hover:bg-neutral-50/70">
                     <td className="py-3.5 px-3 font-mono font-bold text-neutral-800">{prodi.kode}</td>
@@ -70,13 +77,15 @@ export default function MasterDataPage() {
                     <td className="py-3.5 px-3">
                       <div className="flex items-center gap-2">
                         <div className="w-16 h-2 rounded-full bg-neutral-100 overflow-hidden">
-                          <div className="h-full bg-[#4B6E5A]" style={{ width: `${persen}%` }} />
+                          <div className="h-full bg-[#4B6E5A]" style={{ width: `${Math.min(persen, 100)}%` }} />
                         </div>
                         <span className="text-xs font-semibold text-neutral-600">{persen}%</span>
                       </div>
                     </td>
                     <td className="py-3.5 px-3 text-right">
-                      <Badge variant="success" className="text-xs font-semibold">Aktif</Badge>
+                      <Badge variant={prodi.aktif ? "success" : "secondary"} className="text-xs font-semibold">
+                        {prodi.aktif ? "Aktif" : "Nonaktif"}
+                      </Badge>
                     </td>
                   </tr>
                 );

@@ -1,5 +1,6 @@
+import { Suspense } from "react";
 import { AdminShell } from "@/components/admin/shell";
-import { ADMIN_AKTIF } from "@/lib/data-admin";
+import { getAdminAktif } from "@/lib/data-admin";
 
 export const metadata = {
   title: {
@@ -10,5 +11,14 @@ export const metadata = {
 };
 
 export default function AdminLayout({ children }) {
-  return <AdminShell admin={ADMIN_AKTIF}>{children}</AdminShell>;
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center text-sm text-neutral-500">Memuat panel admin...</div>}>
+      <KontenAdminLayout>{children}</KontenAdminLayout>
+    </Suspense>
+  );
+}
+
+async function KontenAdminLayout({ children }) {
+  const admin = await getAdminAktif();
+  return <AdminShell admin={admin}>{children}</AdminShell>;
 }

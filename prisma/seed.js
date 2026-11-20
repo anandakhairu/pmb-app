@@ -116,6 +116,15 @@ const CATATAN_FOTO = "Pas foto kurang jelas. Unggah ulang dengan latar polos dan
 // Urutan status berkas mengikuti urutan DOKUMEN: [PAS_FOTO, KTP_KK, IJAZAH_SKL, RAPOR]
 const MABA = [
   {
+    email: "aulia@example.com", nama: "Aulia Rahmawati", jk: "PEREMPUAN", noHp: "081234567890",
+    profil: { nik: "3374012345670001", tempatLahir: "Semarang", tanggalLahir: "2008-03-14", alamat: "Jl. Sekaran Raya No. 12", kotaKabupaten: "Kota Semarang", provinsi: "Jawa Tengah" },
+    sekolah: { namaSekolah: "SMA Negeri 1 Semarang", npsn: "20328876", jurusan: "MIPA", nilai: "88.50" },
+    prodi: "SI", jalur: "MANDIRI", langkah: 4, statusBerkas: "REVISI", nomor: "PMB-2027-000123",
+    finalisasi: -8, verifikator: true,
+    catatanRevisi: "Pemeriksaan QA: perbaikan scan rapor semester 3.",
+    berkas: [["VALID"], ["VALID"], ["VALID"], ["REVISI", "Halaman semester 3 terpotong di bagian bawah."]],
+  },
+  {
     email: `nadia.putri@${DOMAIN}`, nama: "Nadia Putri Rahma", jk: "PEREMPUAN", noHp: "081234567801",
     // Biodata baru terisi sebagian: belum ada NIK, alamat, dan data sekolah
     profil: { tempatLahir: "Semarang", tanggalLahir: "2008-03-14" },
@@ -156,6 +165,13 @@ const MABA = [
     finalisasi: -14, diverifikasi: -10, ditetapkan: -2, verifikator: true, penetap: true,
     catatanKelulusan: "Selamat, Anda diterima di Teknik Informatika. Silakan lakukan registrasi ulang.",
     berkas: [["VALID"], ["VALID"], ["VALID"], ["VALID"]],
+  },
+  {
+    email: "irfaannnnr@gmail.com", nama: "Irfan Fatkhurrizal", jk: "LAKI_LAKI", noHp: "081234567899",
+    profil: { tempatLahir: "Semarang", tanggalLahir: "2006-01-01" },
+    sekolah: null,
+    prodi: "SI", jalur: "SNBP", langkah: 1, statusBerkas: "DRAFT",
+    berkas: [],
   },
 ];
 
@@ -264,6 +280,80 @@ async function main() {
         create: { formulirId: formulir.id, jenis: d.jenis, ...berkas },
         update: berkas,
       });
+    }
+  }
+
+  // --- Pengumuman publik ---
+  const PENGUMUMAN_DATA = [
+    {
+      slug: "jadwal-pendaftaran-2027",
+      judul: "Jadwal pendaftaran mahasiswa baru 2027/2028 resmi dirilis",
+      ringkasan: "Pendaftaran dibuka mulai Februari 2027 melalui tiga jalur.",
+      isi: "Penerimaan Mahasiswa Baru ADMITRA Tahun Akademik 2027/2028 resmi dibuka. Terdapat tiga jalur seleksi utama: SNBP, SNBT, dan Seleksi Mandiri CBT.",
+      dipublikasikan: true,
+      publishedAt: new Date("2026-11-10T08:00:00.000Z"),
+    },
+    {
+      slug: "beasiswa-kip-kuliah",
+      judul: "Kuota KIP-Kuliah tersedia di seluruh program studi",
+      ringkasan: "Calon mahasiswa dari keluarga kurang mampu dapat mengajukan lewat portal.",
+      isi: "Program Indonesia Pintar melalui KIP-Kuliah dialokasikan untuk calon mahasiswa berprestasi yang membutuhkan dukungan finansial di seluruh program studi.",
+      dipublikasikan: true,
+      publishedAt: new Date("2026-11-02T08:00:00.000Z"),
+    },
+    {
+      slug: "simulasi-ukt",
+      judul: "Simulasi UKT kini tersedia di portal",
+      ringkasan: "Hitung estimasi biaya kuliah sebelum mendaftar, tanpa perlu login.",
+      isi: "Kalkulator interaktif penaksir UKT kini dapat diakses langsung pada beranda portal PMB ADMITRA untuk memberikan transparansi pembiayaan kuliah.",
+      dipublikasikan: true,
+      publishedAt: new Date("2026-10-25T08:00:00.000Z"),
+    },
+  ];
+
+  for (const item of PENGUMUMAN_DATA) {
+    await prisma.pengumuman.upsert({
+      where: { slug: item.slug },
+      create: { ...item, adminId: admin.id },
+      update: { ...item, adminId: admin.id },
+    });
+  }
+
+  // --- Jadwal CBT ---
+  const mandiriRow = await prisma.jalurPendaftaran.findUnique({ where: { kode: "MANDIRI" } });
+  if (mandiriRow) {
+    const sesi = [
+      {
+        nama: "Gelombang 1 - Sesi Pagi",
+        tanggal: new Date("2027-05-15"),
+        jamMulai: new Date("1970-01-01T08:30:00.000Z"),
+        jamSelesai: new Date("1970-01-01T11:30:00.000Z"),
+        lokasi: "Lab Komputer Gedung B Lt. 3",
+        kapasitas: 80,
+      },
+      {
+        nama: "Gelombang 1 - Sesi Siang",
+        tanggal: new Date("2027-05-15"),
+        jamMulai: new Date("1970-01-01T13:00:00.000Z"),
+        jamSelesai: new Date("1970-01-01T16:00:00.000Z"),
+        lokasi: "Lab Komputer Gedung B Lt. 3",
+        kapasitas: 80,
+      },
+    ];
+
+    for (const s of sesi) {
+      const existing = await prisma.jadwalUjianCbt.findFirst({
+        where: { jalurId: mandiriRow.id, nama: s.nama },
+      });
+      if (!existing) {
+        await prisma.jadwalUjianCbt.create({
+          data: {
+            jalurId: mandiriRow.id,
+            ...s,
+            aktif: true,
+          },
+        });
+      }
     }
   }
 

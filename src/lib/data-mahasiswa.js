@@ -80,7 +80,7 @@ export const getDataMahasiswa = cache(async (idOrEmail) => {
     // 2. Query ke Prisma CalonMahasiswa
     const where = target
       ? (target.includes("@") ? { email: target } : { id: target })
-      : { email: "nadia.putri@demo.admitra.id" }; // default preview jika belum login sama sekali
+      : { email: "aulia@example.com" }; // default preview jika belum login sama sekali (sesuai demo dashboard & E2E)
 
     let maba = await prisma.calonMahasiswa.findFirst({
       where,
