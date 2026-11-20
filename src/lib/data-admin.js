@@ -393,10 +393,10 @@ export const DAFTAR_PENDAFTAR_MOCK = [
   },
 ];
 
-/** Mengambil ringkasan statistik metrik analytics dari database PostgreSQL */
+/** Mengambil ringkasan statistik metrik analytics dari database PostgreSQL (100% Data Riil) */
 export const getStatistikAdmin = cache(async () => {
   try {
-    const [total, perluVerifikasi, revisi, lulus, terverifikasi] = await Promise.all([
+    const [total, perluVerifikasi, revisi, lulus, terverifikasi, prodiList] = await Promise.all([
       prisma.formulirPendaftaran.count(),
       prisma.formulirPendaftaran.count({
         where: { statusBerkas: { in: ["DIKIRIM", "DALAM_REVIEW"] } },
@@ -404,16 +404,20 @@ export const getStatistikAdmin = cache(async () => {
       prisma.formulirPendaftaran.count({ where: { statusBerkas: "REVISI" } }),
       prisma.formulirPendaftaran.count({ where: { statusKelulusan: "LULUS" } }),
       prisma.formulirPendaftaran.count({ where: { statusBerkas: "TERVERIFIKASI" } }),
+      prisma.programStudi.findMany({ select: { kuota: true } }),
     ]);
 
+    const kuotaTotal = prodiList.reduce((acc, curr) => acc + (curr.kuota || 0), 0) || 300;
+
     return {
-      totalPendaftar: 1420 + total,
-      perluVerifikasi: 38 + perluVerifikasi,
-      revisi: 14 + revisi,
-      lulus: 412 + lulus,
-      terverifikasi: 890 + terverifikasi,
-      kuotaTotal: 1800,
-      persentaseTerverifikasi: Math.round(((890 + terverifikasi) / (1420 + total || 1)) * 100),
+      totalPendaftar: total,
+      perluVerifikasi,
+      revisi,
+      lulus,
+      terverifikasi,
+      kuotaTotal,
+      persentaseTerverifikasi: total > 0 ? Math.round((terverifikasi / total) * 100) : 0,
+      persentaseLulus: total > 0 ? Math.round((lulus / total) * 100) : 0,
     };
   } catch (err) {
     console.error("Prisma error in getStatistikAdmin fallback to mock:", err.message);
@@ -428,13 +432,14 @@ export const getStatistikAdmin = cache(async () => {
   const terverifikasi = DAFTAR_PENDAFTAR_MOCK.filter((p) => p.statusBerkas === "TERVERIFIKASI").length;
 
   return {
-    totalPendaftar: 1420 + total,
-    perluVerifikasi: 38 + perluVerifikasi,
-    revisi: 14 + revisi,
-    lulus: 412 + lulus,
-    terverifikasi: 890 + terverifikasi,
-    kuotaTotal: 1800,
-    persentaseTerverifikasi: Math.round(((890 + terverifikasi) / (1420 + total)) * 100),
+    totalPendaftar: total,
+    perluVerifikasi,
+    revisi,
+    lulus,
+    terverifikasi,
+    kuotaTotal: 300,
+    persentaseTerverifikasi: total > 0 ? Math.round((terverifikasi / total) * 100) : 0,
+    persentaseLulus: total > 0 ? Math.round((lulus / total) * 100) : 0,
   };
 });
 

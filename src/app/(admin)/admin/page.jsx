@@ -87,8 +87,8 @@ async function KontenAdminDashboard() {
             <div className="text-3xl font-extrabold text-neutral-900">
               {stats.totalPendaftar.toLocaleString("id-ID")}
             </div>
-            <p className="mt-1 flex items-center gap-1.5 text-xs text-neutral-500">
-              <span className="font-semibold text-emerald-600">+12%</span> dibanding gelombang lalu
+            <p className="mt-1 text-xs text-neutral-500">
+              Total formulir terdaftar di database
             </p>
           </CardContent>
         </Card>
@@ -148,7 +148,7 @@ async function KontenAdminDashboard() {
               {stats.lulus}
             </div>
             <p className="mt-1 text-xs text-[#4B6E5A]">
-              Tingkat penerimaan ~29%
+              {stats.persentaseLulus > 0 ? `Tingkat kelulusan ~${stats.persentaseLulus}%` : "Belum ada penetapan kelulusan"}
             </p>
           </CardContent>
         </Card>
