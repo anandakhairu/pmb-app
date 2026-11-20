@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 const MENU = [
   { href: "/dashboard", label: "Beranda", ikon: House, tepat: true },
@@ -107,7 +108,13 @@ function ProfilPengguna({ nama, nomor }) {
           <span>Ke Beranda</span>
         </Link>
         <button
-          onClick={() => {
+          onClick={async () => {
+            try {
+              const supabase = createClient();
+              if (supabase) {
+                await supabase.auth.signOut();
+              }
+            } catch {}
             try {
               localStorage.removeItem("pmb_session");
               window.dispatchEvent(new Event("pmb_session_event"));

@@ -8,6 +8,8 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { createClient } from "@/lib/supabase/client";
+import { registrasiAkunAction } from "@/lib/server/actions";
 import {
   AuthShell,
   FieldError,
@@ -79,14 +81,41 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // TODO (langkah Supabase Auth + Prisma):
-      // 1. supabase.auth.signUp({ email, password })
-      // 2. Server action: buat baris calon_mahasiswa (auth_user_id, email, nama_lengkap, no_hp)
-      await new Promise((resolve) => setTimeout(resolve, 900)); // simulasi
+      const { email, password, namaLengkap, noWa } = parsed.data;
+      let authUserId = null;
 
-      router.push("/login");
-    } catch {
-      setFormError("Pendaftaran akun belum berhasil. Coba lagi sebentar lagi.");
+      // 1. Jika Supabase Auth aktif, daftarkan akun ke auth.users
+      const supabase = createClient();
+      if (supabase) {
+        const { data: authData, error: authErr } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { nama_lengkap: namaLengkap },
+          },
+        });
+
+        if (authErr) {
+          throw new Error(authErr.message || "Gagal mendaftarkan akun di Supabase Auth");
+        }
+        authUserId = authData?.user?.id;
+      }
+
+      // 2. Simpan profil Calon Mahasiswa ke database PostgreSQL via Prisma Server Action
+      const res = await registrasiAkunAction({
+        authUserId,
+        email,
+        namaLengkap,
+        noHp: noWa,
+      });
+
+      if (!res.success) {
+        throw new Error(res.error || "Gagal menyimpan data profil pendaftar.");
+      }
+
+      router.push("/login?registered=true");
+    } catch (err) {
+      setFormError(err.message || "Pendaftaran akun belum berhasil. Coba lagi sebentar lagi.");
     } finally {
       setLoading(false);
     }

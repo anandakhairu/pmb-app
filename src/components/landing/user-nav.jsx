@@ -34,8 +34,27 @@ export function UserNav() {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    const sync = () => {
-      setUser(getActiveSession());
+    let batalkan = false;
+
+    const sync = async () => {
+      const active = getActiveSession();
+      if (!batalkan) setUser(active);
+
+      // Sinkronkan nama lengkap asli sesuai ijazah/database jika ada email aktif
+      if (active?.email) {
+        try {
+          const { ambilProfilPenggunaAction } = await import("@/lib/server/actions");
+          const profil = await ambilProfilPenggunaAction(active.email);
+          if (!batalkan && profil?.nama && profil.nama !== active.nama) {
+            const updated = { ...active, nama: profil.nama, role: profil.role };
+            try {
+              localStorage.setItem("pmb_session", JSON.stringify(updated));
+            } catch {}
+            document.cookie = `pmb_session=${encodeURIComponent(JSON.stringify(updated))}; path=/; max-age=604800; SameSite=Lax`;
+            setUser(updated);
+          }
+        } catch {}
+      }
     };
 
     window.addEventListener("storage", sync);
@@ -44,6 +63,7 @@ export function UserNav() {
     const timer = setTimeout(sync, 0);
 
     return () => {
+      batalkan = true;
       clearTimeout(timer);
       window.removeEventListener("storage", sync);
       window.removeEventListener("pmb_session_event", sync);
@@ -237,8 +257,27 @@ export function HeroCta() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const sync = () => {
-      setUser(getActiveSession());
+    let batalkan = false;
+
+    const sync = async () => {
+      const active = getActiveSession();
+      if (!batalkan) setUser(active);
+
+      // Sinkronkan nama lengkap asli sesuai ijazah/database jika ada email aktif
+      if (active?.email) {
+        try {
+          const { ambilProfilPenggunaAction } = await import("@/lib/server/actions");
+          const profil = await ambilProfilPenggunaAction(active.email);
+          if (!batalkan && profil?.nama && profil.nama !== active.nama) {
+            const updated = { ...active, nama: profil.nama, role: profil.role };
+            try {
+              localStorage.setItem("pmb_session", JSON.stringify(updated));
+            } catch {}
+            document.cookie = `pmb_session=${encodeURIComponent(JSON.stringify(updated))}; path=/; max-age=604800; SameSite=Lax`;
+            setUser(updated);
+          }
+        } catch {}
+      }
     };
 
     window.addEventListener("storage", sync);
@@ -247,6 +286,7 @@ export function HeroCta() {
     const timer = setTimeout(sync, 0);
 
     return () => {
+      batalkan = true;
       clearTimeout(timer);
       window.removeEventListener("storage", sync);
       window.removeEventListener("pmb_session_event", sync);

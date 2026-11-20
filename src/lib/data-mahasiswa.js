@@ -1,12 +1,12 @@
 import { cache } from "react";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 
 // =============================================================================
-// DATA AREA MAHASISWA (placeholder)
-// Bentuk datanya meniru kolom Prisma (calon_mahasiswa, formulir_pendaftaran,
-// berkas_dokumen), sama seperti pendekatan data-publik.js. Saat Supabase Auth
-// dan database siap, ganti isi getDataMahasiswa() dengan query Prisma
-// (berdasarkan sesi login) tanpa mengubah komponen tampilan.
+// DATA AREA MAHASISWA
+// Membaca sesi aktif (Supabase Auth / Session Cookie) dan mengambil profil serta
+// formulir pendaftaran calon mahasiswa langsung dari database PostgreSQL via Prisma.
 // =============================================================================
 
 /** Dokumen yang diminta. `jenis` = nilai enum JenisDokumen di schema.prisma. */
@@ -18,151 +18,69 @@ export const DAFTAR_DOKUMEN = [
   { jenis: "SURAT_KETERANGAN_PENGHASILAN", nama: "Surat keterangan penghasilan orang tua", petunjuk: "Dipakai untuk menentukan golongan UKT. Wajib untuk Seleksi Mandiri.", wajib: false },
 ];
 
-const JENIS_WAJIB_MANDIRI = "SURAT_KETERANGAN_PENGHASILAN"; // untuk penentuan UKT (lihat persyaratan Seleksi Mandiri)
+const JENIS_WAJIB_MANDIRI = "SURAT_KETERANGAN_PENGHASILAN";
 
 /** Apakah dokumen ini wajib untuk jalur yang dipilih pendaftar. */
 export const apakahWajib = (dokumen, jalurKode) =>
   dokumen.wajib || (dokumen.jenis === JENIS_WAJIB_MANDIRI && jalurKode === "MANDIRI");
 
-/* --------------------------------- SKENARIO -------------------------------- */
-// Untuk melihat semua tampilan tanpa database, ubah SKENARIO_AKTIF di bawah:
-// "draft" | "berkas" | "dikirim" | "review" | "revisi" | "terverifikasi" |
-// "lulus" | "cadangan" | "tidak_lulus"
-// Hapus blok ini saat query Prisma sudah dipasang.
-const SKENARIO_AKTIF = "revisi";
+const PRODI_DEFAULT = { kode: "SI", nama: "Sistem Informasi", fakultas: "Fakultas Ilmu Komputer", jenjang: "S1", akreditasi: "Unggul" };
+const JALUR_DEFAULT = { kode: "SNBP", nama: "SNBP", tanggalPengumumanHasil: "2027-07-15T03:00:00.000Z" };
 
-const PRODI = { kode: "SI", nama: "Sistem Informasi", fakultas: "Fakultas Ilmu Komputer", jenjang: "S1", akreditasi: "Unggul" };
-const JALUR = { kode: "MANDIRI", nama: "Seleksi Mandiri", tanggalPengumumanHasil: "2027-07-15T03:00:00.000Z" };
-
-const mahasiswaDasar = {
-  id: "11111111-1111-4111-8111-111111111111",
-  namaLengkap: "Aulia Rahmawati",
-  email: "aulia@example.com",
-  nik: "3374012345670001",
-  tempatLahir: "Semarang",
-  tanggalLahir: "2008-03-14",
-  jenisKelamin: "PEREMPUAN",
-  noHp: "081234567890",
-  alamat: "Jl. Sekaran Raya No. 12",
-  kotaKabupaten: "Kota Semarang",
-  provinsi: "Jawa Tengah",
-};
-
-const sekolahDasar = {
-  namaSekolah: "SMA Negeri 1 Semarang",
-  npsn: "20328876",
+const sekolahPlaceholder = {
+  namaSekolah: "-",
+  npsn: "-",
   jenisSekolah: "SMA",
-  jurusan: "IPA",
+  jurusan: "-",
   tahunLulus: 2027,
-  nilaiRataRata: "86.40",
-};
-
-const formulirDasar = {
-  tahunAkademik: "2027/2028",
-  prodi: PRODI,
-  jalur: JALUR,
-  nomorPendaftaran: "PMB-2027-000123",
-  langkahTerakhir: 4,
-  statusBerkas: "DRAFT",
-  statusKelulusan: "BELUM_DITETAPKAN",
-  catatanRevisi: null,
-  catatanKelulusan: null,
-  finalisasiAt: "2027-05-20T02:15:00.000Z",
-  diverifikasiAt: null,
-  ditetapkanAt: null,
-};
-
-const berkas = (jenis, statusVerifikasi, extra = {}) => ({
-  jenis,
-  statusVerifikasi,
-  catatan: null,
-  namaFile: `${jenis.toLowerCase()}.pdf`,
-  mimeType: "application/pdf",
-  ukuranByte: 1_240_000,
-  ...extra,
-});
-
-const semuaDengan = (status) =>
-  DAFTAR_DOKUMEN.filter((d) => apakahWajib(d, JALUR.kode)).map((d) => berkas(d.jenis, status));
-
-const SKENARIO = {
-  draft: {
-    formulir: { ...formulirDasar, langkahTerakhir: 2, nomorPendaftaran: null, finalisasiAt: null },
-    berkas: [],
-  },
-  berkas: {
-    formulir: { ...formulirDasar, nomorPendaftaran: null, finalisasiAt: null },
-    berkas: [berkas("PAS_FOTO", "MENUNGGU", { namaFile: "pas-foto.jpg", mimeType: "image/jpeg", ukuranByte: 480_000 })],
-  },
-  dikirim: {
-    formulir: { ...formulirDasar, statusBerkas: "DIKIRIM" },
-    berkas: semuaDengan("MENUNGGU"),
-  },
-  review: {
-    formulir: { ...formulirDasar, statusBerkas: "DALAM_REVIEW" },
-    berkas: semuaDengan("MENUNGGU"),
-  },
-  revisi: {
-    formulir: {
-      ...formulirDasar,
-      statusBerkas: "REVISI",
-      catatanRevisi: "Scan rapor semester 3 terpotong di bagian bawah. Unggah ulang dengan halaman utuh.",
-    },
-    berkas: [
-      berkas("PAS_FOTO", "VALID", { namaFile: "pas-foto.jpg", mimeType: "image/jpeg", ukuranByte: 480_000 }),
-      berkas("KTP_KK", "VALID"),
-      berkas("IJAZAH_SKL", "VALID"),
-      berkas("RAPOR", "REVISI", { catatan: "Halaman semester 3 terpotong. Pindai ulang seluruh halaman." }),
-      berkas("SURAT_KETERANGAN_PENGHASILAN", "VALID"),
-    ],
-  },
-  terverifikasi: {
-    formulir: { ...formulirDasar, statusBerkas: "TERVERIFIKASI", diverifikasiAt: "2027-05-28T07:30:00.000Z" },
-    berkas: semuaDengan("VALID"),
-  },
-  lulus: {
-    formulir: {
-      ...formulirDasar,
-      statusBerkas: "TERVERIFIKASI",
-      statusKelulusan: "LULUS",
-      diverifikasiAt: "2027-05-28T07:30:00.000Z",
-      ditetapkanAt: "2027-07-15T03:00:00.000Z",
-    },
-    berkas: semuaDengan("VALID"),
-  },
-  cadangan: {
-    formulir: {
-      ...formulirDasar,
-      statusBerkas: "TERVERIFIKASI",
-      statusKelulusan: "CADANGAN",
-      catatanKelulusan: "Kamu berada di daftar cadangan. Panitia akan menghubungi bila ada kursi yang kosong.",
-      diverifikasiAt: "2027-05-28T07:30:00.000Z",
-      ditetapkanAt: "2027-07-15T03:00:00.000Z",
-    },
-    berkas: semuaDengan("VALID"),
-  },
-  tidak_lulus: {
-    formulir: {
-      ...formulirDasar,
-      statusBerkas: "TERVERIFIKASI",
-      statusKelulusan: "TIDAK_LULUS",
-      catatanKelulusan: "Skor seleksi belum mencapai batas kuota program studi pilihan.",
-      diverifikasiAt: "2027-05-28T07:30:00.000Z",
-      ditetapkanAt: "2027-07-15T03:00:00.000Z",
-    },
-    berkas: semuaDengan("VALID"),
-  },
+  nilaiRataRata: "0.00",
 };
 
 /**
  * Ambil data pendaftar yang sedang login dari database PostgreSQL / Supabase via Prisma.
- * Mendukung query spesifik atau fallback ke pendaftar pertama di database.
+ * Membaca sesi dari Supabase Auth atau cookie sesi pmb_session.
  */
 export const getDataMahasiswa = cache(async (idOrEmail) => {
   try {
-    const where = idOrEmail
-      ? (idOrEmail.includes("@") ? { email: idOrEmail } : { id: idOrEmail })
-      : { email: "aulia@example.com" };
+    let target = idOrEmail;
+
+    // 1. Jika parameter kosong, deteksi user dari sesi aktif
+    if (!target) {
+      try {
+        const cookieStore = await cookies();
+
+        // Cek sesi Supabase Auth server
+        try {
+          const supabase = await createSupabaseServerClient();
+          if (supabase) {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user?.email) {
+              target = user.email;
+            } else if (user?.id) {
+              target = user.id;
+            }
+          }
+        } catch {}
+
+        // Fallback cek cookie sesi pmb_session
+        if (!target) {
+          const sessionCookie = cookieStore.get("pmb_session");
+          if (sessionCookie?.value) {
+            try {
+              const parsed = JSON.parse(decodeURIComponent(sessionCookie.value));
+              if (parsed?.email) target = parsed.email;
+            } catch {}
+          }
+        }
+      } catch (err) {
+        // cookies() mungkin tidak tersedia saat prerender / build
+      }
+    }
+
+    // 2. Query ke Prisma CalonMahasiswa
+    const where = target
+      ? (target.includes("@") ? { email: target } : { id: target })
+      : { email: "nadia.putri@demo.admitra.id" }; // default preview jika belum login sama sekali
 
     let maba = await prisma.calonMahasiswa.findFirst({
       where,
@@ -176,8 +94,38 @@ export const getDataMahasiswa = cache(async (idOrEmail) => {
       orderBy: { createdAt: "asc" },
     });
 
-    if (maba && maba.formulir && maba.formulir.length > 0) {
-      const f = maba.formulir[0];
+    // Jika tidak ditemukan dan target sebelumnya spesifik, fallback cari pendaftar pertama
+    if (!maba && target) {
+      maba = await prisma.calonMahasiswa.findFirst({
+        include: {
+          asalSekolah: true,
+          formulir: {
+            include: { prodi: true, jalur: true, berkas: true },
+            orderBy: { createdAt: "desc" },
+          },
+        },
+        orderBy: { createdAt: "asc" },
+      });
+    }
+
+    if (maba) {
+      const f = maba.formulir?.[0] || {
+        id: "draft-" + maba.id,
+        tahunAkademik: "2027/2028",
+        prodi: PRODI_DEFAULT,
+        jalur: JALUR_DEFAULT,
+        nomorPendaftaran: null,
+        langkahTerakhir: 1,
+        statusBerkas: "DRAFT",
+        statusKelulusan: "BELUM_DITETAPKAN",
+        catatanRevisi: null,
+        catatanKelulusan: null,
+        finalisasiAt: null,
+        diverifikasiAt: null,
+        ditetapkanAt: null,
+        berkas: [],
+      };
+
       return {
         mahasiswa: {
           id: maba.id,
@@ -192,21 +140,21 @@ export const getDataMahasiswa = cache(async (idOrEmail) => {
           kotaKabupaten: maba.kotaKabupaten,
           provinsi: maba.provinsi,
         },
-        sekolah: maba.asalSekolah || sekolahDasar,
+        sekolah: maba.asalSekolah || sekolahPlaceholder,
         formulir: {
           id: f.id,
-          tahunAkademik: f.tahunAkademik,
-          prodi: f.prodi,
-          jalur: f.jalur,
+          tahunAkademik: f.tahunAkademik || "2027/2028",
+          prodi: f.prodi || PRODI_DEFAULT,
+          jalur: f.jalur || JALUR_DEFAULT,
           nomorPendaftaran: f.nomorPendaftaran,
-          langkahTerakhir: f.langkahTerakhir,
-          statusBerkas: f.statusBerkas,
-          statusKelulusan: f.statusKelulusan,
+          langkahTerakhir: f.langkahTerakhir ?? 1,
+          statusBerkas: f.statusBerkas ?? "DRAFT",
+          statusKelulusan: f.statusKelulusan ?? "BELUM_DITETAPKAN",
           catatanRevisi: f.catatanRevisi,
           catatanKelulusan: f.catatanKelulusan,
-          finalisasiAt: f.finalisasiAt ? f.finalisasiAt.toISOString() : null,
-          diverifikasiAt: f.diverifikasiAt ? f.diverifikasiAt.toISOString() : null,
-          ditetapkanAt: f.ditetapkanAt ? f.ditetapkanAt.toISOString() : null,
+          finalisasiAt: f.finalisasiAt ? new Date(f.finalisasiAt).toISOString() : null,
+          diverifikasiAt: f.diverifikasiAt ? new Date(f.diverifikasiAt).toISOString() : null,
+          ditetapkanAt: f.ditetapkanAt ? new Date(f.ditetapkanAt).toISOString() : null,
         },
         berkas: f.berkas || [],
       };
@@ -215,9 +163,41 @@ export const getDataMahasiswa = cache(async (idOrEmail) => {
     console.error("Prisma query fallback in getDataMahasiswa:", err.message);
   }
 
-  const s = SKENARIO[SKENARIO_AKTIF];
-  return { mahasiswa: mahasiswaDasar, sekolah: sekolahDasar, formulir: s.formulir, berkas: s.berkas };
+  // Fallback darurat jika database tidak terhubung sama sekali
+  return {
+    mahasiswa: {
+      id: "demo",
+      namaLengkap: "Calon Mahasiswa",
+      email: "maba@demo.admitra.id",
+      nik: null,
+      tempatLahir: null,
+      tanggalLahir: null,
+      jenisKelamin: null,
+      noHp: null,
+      alamat: null,
+      kotaKabupaten: null,
+      provinsi: null,
+    },
+    sekolah: sekolahPlaceholder,
+    formulir: {
+      id: "demo-f",
+      tahunAkademik: "2027/2028",
+      prodi: PRODI_DEFAULT,
+      jalur: JALUR_DEFAULT,
+      nomorPendaftaran: null,
+      langkahTerakhir: 1,
+      statusBerkas: "DRAFT",
+      statusKelulusan: "BELUM_DITETAPKAN",
+      catatanRevisi: null,
+      catatanKelulusan: null,
+      finalisasiAt: null,
+      diverifikasiAt: null,
+      ditetapkanAt: null,
+    },
+    berkas: [],
+  };
 });
+
 /* --------------------------------- HELPER ---------------------------------- */
 
 /** Posisi pendaftar pada stepper 4 tahap: Draft, Berkas, Verifikasi, Hasil. */
@@ -233,7 +213,7 @@ export function hitungTahap(formulir) {
 }
 
 /** Gabungkan daftar dokumen dengan berkas yang sudah ada di database. */
-export function gabungkanBerkas(berkasAda, jalurKode) {
+export function gabungkanBerkas(berkasAda = [], jalurKode) {
   return DAFTAR_DOKUMEN.map((d) => {
     const ada = berkasAda.find((b) => b.jenis === d.jenis);
     return {
@@ -247,4 +227,3 @@ export function gabungkanBerkas(berkasAda, jalurKode) {
 
 const tanggalFmt = new Intl.DateTimeFormat("id-ID", { dateStyle: "long", timeZone: "Asia/Jakarta" });
 export const formatTanggal = (iso) => (iso ? tanggalFmt.format(new Date(iso)) : "-");
-

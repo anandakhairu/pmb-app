@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { createClient } from "@/lib/supabase/client";
+import { ambilProfilPenggunaAction } from "@/lib/server/actions";
 import {
   AuthShell,
   FieldError,
@@ -53,20 +55,27 @@ export default function LoginPage() {
 
     let target = null;
     try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
       const emailLower = email.toLowerCase();
       const isAdmin = emailLower.includes("admin") || emailLower.includes("panitia");
+
+      const supabase = createClient();
+      if (supabase) {
+        const { error: authErr } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (authErr) {
+          console.warn("Supabase Auth sign-in failed, proceeding with session sync:", authErr.message);
+        }
+      }
+
+      const profil = await ambilProfilPenggunaAction(email);
       const userPayload = {
         email,
-        nama: isAdmin
-          ? "Budi Santoso, M.Kom."
-          : emailLower.includes("aulia")
-          ? "Aulia Rahmawati"
-          : email.split("@")[0],
-        role: isAdmin ? "ADMIN" : "PENDAFTAR",
+        nama: profil?.nama || email.split("@")[0],
+        role: profil?.role || (isAdmin ? "ADMIN" : "PENDAFTAR"),
       };
 
-      // Simpan di localStorage dan cookie untuk sinkronisasi instan
       if (typeof window !== "undefined") {
         try {
           localStorage.setItem("pmb_session", JSON.stringify(userPayload));
@@ -75,12 +84,15 @@ export default function LoginPage() {
       }
       document.cookie = `pmb_session=${encodeURIComponent(JSON.stringify(userPayload))}; path=/; max-age=604800; SameSite=Lax`;
       target = isAdmin ? "/admin" : "/dashboard";
+    } catch (err) {
+      setFormError(err.message || "Gagal masuk portal.");
     } finally {
       setLoading(false);
     }
 
     if (target) {
       router.push(target);
+      router.refresh();
     }
   }
 
@@ -109,17 +121,25 @@ export default function LoginPage() {
 
     let target = null;
     try {
-      await new Promise((resolve) => setTimeout(resolve, 350));
       const emailLower = parsed.data.email.toLowerCase();
       const isAdmin = emailLower.includes("admin") || emailLower.includes("panitia");
+
+      const supabase = createClient();
+      if (supabase) {
+        const { error: authErr } = await supabase.auth.signInWithPassword({
+          email: parsed.data.email,
+          password: parsed.data.password,
+        });
+        if (authErr) {
+          throw new Error(authErr.message || "Email atau kata sandi tidak sesuai.");
+        }
+      }
+
+      const profil = await ambilProfilPenggunaAction(parsed.data.email);
       const userPayload = {
         email: parsed.data.email,
-        nama: isAdmin
-          ? "Budi Santoso, M.Kom."
-          : emailLower.includes("aulia")
-          ? "Aulia Rahmawati"
-          : parsed.data.email.split("@")[0],
-        role: isAdmin ? "ADMIN" : "PENDAFTAR",
+        nama: profil?.nama || parsed.data.email.split("@")[0],
+        role: profil?.role || (isAdmin ? "ADMIN" : "PENDAFTAR"),
       };
 
       if (typeof window !== "undefined") {
@@ -130,14 +150,15 @@ export default function LoginPage() {
       }
       document.cookie = `pmb_session=${encodeURIComponent(JSON.stringify(userPayload))}; path=/; max-age=604800; SameSite=Lax`;
       target = isAdmin ? "/admin" : "/dashboard";
-    } catch {
-      setFormError("Gagal memproses login. Silakan periksa kembali.");
+    } catch (err) {
+      setFormError(err.message || "Gagal memproses login. Silakan periksa kembali.");
     } finally {
       setLoading(false);
     }
 
     if (target) {
       router.push(target);
+      router.refresh();
     }
   }
 
@@ -163,31 +184,53 @@ export default function LoginPage() {
             Akun Cepat untuk Uji Coba:
           </p>
           <span className="text-[10px] font-semibold text-[#4B6E5A] bg-white px-2 py-0.5 rounded-full border border-[#4B6E5A]/20">
-            1-Klik Isi
+            1-Klik Masuk
           </span>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
           <button
             type="button"
-            onClick={() => masukCepat("aulia@example.com", "Pendaftar2027!")}
+            onClick={() => masukCepat("nadia.putri@demo.admitra.id", "Maba12345")}
             className="group rounded-xl border border-neutral-200 bg-white p-2.5 text-left transition-all hover:border-[#4B6E5A] hover:bg-[#4B6E5A]/5 focus-visible:outline-[#4B6E5A]"
           >
             <div className="flex items-center justify-between">
-              <p className="font-bold text-neutral-900 group-hover:text-[#4B6E5A]">🎓 Calon Pendaftar</p>
-              <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">1-Klik Masuk</span>
+              <p className="font-bold text-neutral-900 group-hover:text-[#4B6E5A]">🎓 Nadia (Draft)</p>
+              <span className="text-[10px] text-neutral-600 bg-neutral-100 px-1.5 py-0.5 rounded font-medium">Draft</span>
             </div>
-            <p className="text-[11px] text-neutral-500 font-mono mt-0.5">aulia@example.com</p>
+            <p className="text-[11px] text-neutral-500 font-mono mt-0.5 truncate">nadia.putri@...</p>
           </button>
           <button
             type="button"
-            onClick={() => masukCepat("panitia.pmb@universitas.ac.id", "Panitia2027!")}
+            onClick={() => masukCepat("dimas.ardiansyah@demo.admitra.id", "Maba12345")}
+            className="group rounded-xl border border-neutral-200 bg-white p-2.5 text-left transition-all hover:border-[#4B6E5A] hover:bg-[#4B6E5A]/5 focus-visible:outline-[#4B6E5A]"
+          >
+            <div className="flex items-center justify-between">
+              <p className="font-bold text-neutral-900 group-hover:text-[#4B6E5A]">📄 Dimas (Revisi)</p>
+              <span className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-bold">Revisi</span>
+            </div>
+            <p className="text-[11px] text-neutral-500 font-mono mt-0.5 truncate">dimas.ardiansyah@...</p>
+          </button>
+          <button
+            type="button"
+            onClick={() => masukCepat("anindya.kirana@demo.admitra.id", "Maba12345")}
+            className="group rounded-xl border border-neutral-200 bg-white p-2.5 text-left transition-all hover:border-[#4B6E5A] hover:bg-[#4B6E5A]/5 focus-visible:outline-[#4B6E5A]"
+          >
+            <div className="flex items-center justify-between">
+              <p className="font-bold text-neutral-900 group-hover:text-[#4B6E5A]">🏆 Anindya (Lulus)</p>
+              <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">Lulus</span>
+            </div>
+            <p className="text-[11px] text-neutral-500 font-mono mt-0.5 truncate">anindya.kirana@...</p>
+          </button>
+          <button
+            type="button"
+            onClick={() => masukCepat("admin@demo.admitra.id", "Admin12345")}
             className="group rounded-xl border border-neutral-200 bg-white p-2.5 text-left transition-all hover:border-[#4B6E5A] hover:bg-[#4B6E5A]/5 focus-visible:outline-[#4B6E5A]"
           >
             <div className="flex items-center justify-between">
               <p className="font-bold text-neutral-900 group-hover:text-[#4B6E5A]">🛡️ Admin Panitia</p>
-              <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">1-Klik Masuk</span>
+              <span className="text-[10px] text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded font-bold">Admin</span>
             </div>
-            <p className="text-[11px] text-neutral-500 font-mono mt-0.5">panitia.pmb@...</p>
+            <p className="text-[11px] text-neutral-500 font-mono mt-0.5 truncate">admin@demo...</p>
           </button>
         </div>
       </div>

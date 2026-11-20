@@ -354,3 +354,78 @@ export async function toggleJalurPendaftaranAction(payload) {
     };
   }
 }
+
+/**
+ * Server Action: Mendaftarkan profil CalonMahasiswa baru ke database Prisma
+ */
+export async function registrasiAkunAction({ authUserId, email, namaLengkap, noHp }) {
+  try {
+    const existing = await prisma.calonMahasiswa.findUnique({ where: { email } });
+    if (existing) {
+      return { success: false, error: "Email sudah terdaftar di sistem." };
+    }
+
+    const maba = await prisma.calonMahasiswa.create({
+      data: {
+        authUserId: authUserId || crypto.randomUUID(),
+        email,
+        namaLengkap,
+        noHp,
+      },
+    });
+
+    return { success: true, data: { id: maba.id, email: maba.email } };
+  } catch (error) {
+    console.error("Gagal registrasi akun:", error);
+    return { success: false, error: "Gagal menyimpan data akun: " + error.message };
+  }
+}
+
+/**
+ * Server Action: Mengambil profil lengkap pengguna (nama lengkap asli sesuai database)
+ */
+export async function ambilProfilPenggunaAction(email) {
+  if (!email) return null;
+  const emailLower = email.toLowerCase().trim();
+
+  try {
+    // 1. Cek tabel Admin
+    const admin = await prisma.admin.findFirst({
+      where: { email: emailLower },
+      select: { id: true, nama: true, email: true, role: true },
+    });
+    if (admin) {
+      return {
+        id: admin.id,
+        email: admin.email,
+        nama: admin.nama,
+        role: "ADMIN",
+      };
+    }
+
+    // 2. Cek tabel CalonMahasiswa (nama lengkap sesuai ijazah/biodata)
+    const maba = await prisma.calonMahasiswa.findFirst({
+      where: { email: emailLower },
+      select: { id: true, namaLengkap: true, email: true },
+    });
+    if (maba) {
+      return {
+        id: maba.id,
+        email: maba.email,
+        nama: maba.namaLengkap,
+        role: "PENDAFTAR",
+      };
+    }
+  } catch (err) {
+    console.error("Gagal ambil profil pengguna:", err.message);
+  }
+
+  // Fallback jika tidak ada di DB
+  return {
+    email: emailLower,
+    nama: emailLower.split("@")[0],
+    role: emailLower.includes("admin") ? "ADMIN" : "PENDAFTAR",
+  };
+}
+
+
